@@ -508,13 +508,7 @@ export default function App() {
               rel="noreferrer"
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
             >
-              <Image
-                src="/github.png"
-                width={20}
-                height={20}
-                alt="Mobile Agent logo"
-                priority
-              />
+              <GitHubIcon className="size-6" />
               <span className="hidden md:inline">GitHub</span>
             </a>
             <button
@@ -564,13 +558,7 @@ export default function App() {
                     rel="noreferrer"
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 font-bold"
                   >
-                    <Image
-                      src="/github.png"
-                      width={20}
-                      height={20}
-                      alt="Mobile Agent logo"
-                      priority
-                    />{" "}
+                    <GitHubIcon className="size-6" />
                     GitHub
                   </a>
                   <button
@@ -659,13 +647,7 @@ export default function App() {
                   }
                   className="px-7"
                 >
-                  <Image
-                    src="/github.png"
-                    width={20}
-                    height={20}
-                    alt="Mobile Agent logo"
-                    priority
-                  />
+                  <GitHubIcon className="size-6" />
                   View on GitHub
                 </Button>
               </motion.div>
