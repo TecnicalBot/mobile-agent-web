@@ -59,8 +59,8 @@ function PhoneFrame({ screen }: { screen: ScreenKey }) {
     <div
       className="
         relative
-        w-[260px]
-        sm:w-[250px]
+        w-[225px]
+        sm:w-[260px]
         md:w-[min(80%,280px)]
       "
     >
