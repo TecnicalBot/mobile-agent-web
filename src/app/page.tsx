@@ -593,7 +593,7 @@ export default function App() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
                 </span>
-                This is a Demo
+                Open-source. Android-native. Local-first.
               </motion.div>
 
               <motion.h1
