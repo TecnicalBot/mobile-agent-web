@@ -1034,7 +1034,11 @@ export default function App() {
                 Technical Bot
               </a>
             </span>
-            . All Rights Reserved.
+            . All Rights Reserved.{" | "}
+            Design by{" "}
+            <a href="https://github.com/7kajal" target="_blank" className="underline">
+              Kajal Yadav (@7kajal)
+            </a>
           </p>
         </div>
       </footer>
