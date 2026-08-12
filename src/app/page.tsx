@@ -1,3 +1,4 @@
+
 "use client";
 
 import { DiscordIcon, GitHubIcon, XIcon, YouTubeIcon } from "@/component/icons";
@@ -23,7 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 type ScreenKey =
   | "chat-thinking"
@@ -369,6 +370,32 @@ export default function App() {
   const [heroScreen, setHeroScreen] = useState<ScreenKey>("chat-thinking");
   const [navOpen, setNavOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const pendingScrollRef = useRef<string | null>(null);
+
+  const scrollToSection = (href: string) => {
+    history.pushState(null, "", href);
+    if (href === "#" || href === "#top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    document.getElementById(href.slice(1))?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const handleNavClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    event.preventDefault();
+    if (navOpen) {
+      pendingScrollRef.current = href;
+      setNavOpen(false);
+    } else {
+      scrollToSection(href);
+    }
+  };
 
   useEffect(() => {
     const screens: ScreenKey[] = [
@@ -494,6 +521,7 @@ export default function App() {
               <a
                 key={href}
                 href={href}
+                onClick={(event) => handleNavClick(event, href)}
                 className="text-sm font-semibold text-slate-600 transition-colors hover:text-blue-600"
               >
                 {label}
@@ -531,7 +559,15 @@ export default function App() {
           </button>
         </div>
 
-        <AnimatePresence initial={false}>
+        <AnimatePresence
+          initial={false}
+          onExitComplete={() => {
+            if (pendingScrollRef.current) {
+              scrollToSection(pendingScrollRef.current);
+              pendingScrollRef.current = null;
+            }
+          }}
+        >
           {navOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -545,7 +581,7 @@ export default function App() {
                   <a
                     key={href}
                     href={href}
-                    onClick={() => setNavOpen(false)}
+                    onClick={(event) => handleNavClick(event, href)}
                     className="rounded-lg px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
                   >
                     {label}
@@ -1045,3 +1081,4 @@ export default function App() {
     </div>
   );
 }
+
