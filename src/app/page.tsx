@@ -3,12 +3,14 @@
 
 import { DiscordIcon, GitHubIcon, XIcon, YouTubeIcon } from "@/component/icons";
 import { ScrollProductExperienceSection } from "@/component/scroll";
+import { siteUrl } from "@/lib/site-url";
 import { AnimatePresence, motion, type HTMLMotionProps } from "framer-motion";
 import {
-  Activity,
   ArrowRight,
   Brain,
+  Bot,
   ChevronRight,
+  Clock,
   Code2,
   Download,
   FileText,
@@ -19,24 +21,13 @@ import {
   Smartphone,
   Sparkles,
   Terminal,
+  WifiOff,
   Workflow,
   X,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
-
-type ScreenKey =
-  | "chat-thinking"
-  | "chat-response"
-  | "slash-commands"
-  | "at-commands"
-  | "mcp-servers"
-  | "built-in-tools"
-  | "model-select"
-  | "db-settings"
-  | "settings-main"
-  | "sidebar";
+import React, { useRef, useState } from "react";
 
 type GitHubAsset = {
   name: string;
@@ -49,23 +40,39 @@ type GitHubRelease = {
   assets: GitHubAsset[];
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mobile-agent.app";
 const githubUrl = "https://github.com/TecnicalBot/mobile-agent";
 const releasesUrl = `${githubUrl}/releases`;
+// GitHub redirects this to the latest non-prerelease release page, so the
+// download button still works when the GitHub API is rate limited or down.
+const latestReleaseUrl = `${githubUrl}/releases/latest`;
 
 const getLatestApkUrl = async () => {
-  const res = await fetch(
-    "https://api.github.com/repos/TecnicalBot/mobile-agent/releases",
-  );
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
 
-  const releases = await res.json();
+  try {
+    const res = await fetch(
+      "https://api.github.com/repos/TecnicalBot/mobile-agent/releases",
+      { signal: controller.signal },
+    );
 
-  const release =
-    releases.find((r: any) => !r.draft && !r.prerelease) ??
-    releases.find((r: any) => !r.draft && r.prerelease);
-  const apk = release.assets.find((a: any) => a.name.endsWith(".apk"));
+    if (!res.ok) {
+      throw new Error(`GitHub API responded with ${res.status}.`);
+    }
 
-  return apk.browser_download_url;
+    const releases = (await res.json()) as GitHubRelease[];
+
+    const release =
+      releases.find((r) => !r.draft && !r.prerelease) ??
+      releases.find((r) => !r.draft && r.prerelease);
+    const apk = release?.assets.find((a) => a.name.endsWith(".apk"));
+
+    return apk?.browser_download_url ?? latestReleaseUrl;
+  } catch {
+    return latestReleaseUrl;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 };
 
 const handleDownload = async () => {
@@ -130,6 +137,34 @@ const featureCards = [
     icon: Code2,
     accent: "from-slate-500/15 to-zinc-400/5",
   },
+  {
+    title: "On-device models, fully offline",
+    description:
+      "Download compact models and run them directly on the phone — no internet connection required once installed.",
+    icon: WifiOff,
+    accent: "from-teal-500/15 to-emerald-400/5",
+  },
+  {
+    title: "Scheduled jobs",
+    description:
+      "Set cron-style schedules that run the agent in the background and notify you when a run finishes.",
+    icon: Clock,
+    accent: "from-indigo-500/15 to-blue-400/5",
+  },
+  {
+    title: "Custom agents",
+    description:
+      "Create agent profiles with their own model, tools, skills, and instructions, then switch between them per task.",
+    icon: Bot,
+    accent: "from-pink-500/15 to-rose-400/5",
+  },
+  {
+    title: "Termux terminal",
+    description:
+      "Execute shell commands through Termux MCP and watch the live output in a read-only terminal view.",
+    icon: Terminal,
+    accent: "from-zinc-500/15 to-slate-400/5",
+  },
 ];
 
 const faqs = [
@@ -156,53 +191,12 @@ const faqs = [
   {
     question: "What can the agent do?",
     answer:
-      "It can chat with multiple models, use MCP servers, run reusable skills, maintain memory, work with local files, and expose a visible approval flow for tool calls.",
+      "It can chat with multiple models — including on-device models that work offline — use MCP servers, run reusable skills, maintain memory, work with local files, run scheduled background jobs, switch between custom agent profiles, execute Termux shell commands, and expose a visible approval flow for tool calls.",
   },
   {
     question: "Is Mobile Agent open source?",
     answer:
       "Yes. The source code and Android release builds are published on GitHub under the repository license.",
-  },
-];
-
-const demoTabs: Array<{
-  screen: ScreenKey;
-  label: string;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-}> = [
-  {
-    screen: "chat-thinking",
-    label: "Trace",
-    title: "See how every task runs",
-    description:
-      "Follow model reasoning, tool calls, approvals, and results in one transparent timeline.",
-    icon: Activity,
-  },
-  {
-    screen: "chat-response",
-    label: "Approve",
-    title: "Stay in control of tools",
-    description:
-      "Pause sensitive operations and choose whether to deny or allow each action.",
-    icon: ShieldCheck,
-  },
-  {
-    screen: "slash-commands",
-    label: "Command",
-    title: "Move quickly with commands",
-    description:
-      "Switch models, choose skills, start chats, and open settings without leaving the composer.",
-    icon: Terminal,
-  },
-  {
-    screen: "at-commands",
-    label: "Files",
-    title: "Bring local files into context",
-    description:
-      "Attach, browse, and create workspace files using a phone-native interaction.",
-    icon: FileText,
   },
 ];
 
@@ -367,7 +361,6 @@ export const Button = ({
 };
 
 export default function App() {
-  const [heroScreen, setHeroScreen] = useState<ScreenKey>("chat-thinking");
   const [navOpen, setNavOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const pendingScrollRef = useRef<string | null>(null);
@@ -396,26 +389,6 @@ export default function App() {
       scrollToSection(href);
     }
   };
-
-  useEffect(() => {
-    const screens: ScreenKey[] = [
-      "chat-thinking",
-      "chat-response",
-      "slash-commands",
-      "at-commands",
-    ];
-    let index = 0;
-
-    const interval = window.setInterval(() => {
-      index = (index + 1) % screens.length;
-      setHeroScreen(screens[index]);
-    }, 5600);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  const activeDemo =
-    demoTabs.find((item) => item.screen === heroScreen) ?? demoTabs[0];
 
   const cardEntrances = [
     { x: -180, y: -100, rotate: -7 },
@@ -537,7 +510,7 @@ export default function App() {
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
             >
               <GitHubIcon className="size-6" />
-              <span className="hidden md:inline">GitHub</span>
+              <span className="hidden md:inline">Star on GitHub</span>
             </a>
             <button
               onClick={handleDownload}
@@ -595,7 +568,7 @@ export default function App() {
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 font-bold"
                   >
                     <GitHubIcon className="size-6" />
-                    GitHub
+                    Star on GitHub
                   </a>
                   <button
                     onClick={handleDownload}
@@ -659,8 +632,8 @@ export default function App() {
                 className="mx-auto mt-6 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg sm:leading-8"
               >
                 Multiple models, MCP tools, skills, memory, and local file
-                workflows from one Android interface and doesn't require any
-                external server.
+                workflows from one Android interface and doesn&apos;t require
+                any external server.
               </motion.p>
 
               <motion.div
@@ -935,7 +908,7 @@ export default function App() {
                     }
                     className=" px-7"
                   >
-                    Explore GitHub <ArrowRight size={16} />
+                    Star on GitHub <ArrowRight size={16} />
                   </Button>
                 </div>
               </div>
@@ -987,7 +960,8 @@ export default function App() {
                 href={githubUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label="Open GitHub"
+                aria-label="Star on GitHub"
+                title="Star on GitHub"
                 className="
             flex h-11 w-11 items-center justify-center
             rounded-full border border-blue-600

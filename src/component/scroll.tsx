@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileText,
   MessageSquareText,
+  Terminal,
   Workflow,
 } from "lucide-react";
 
@@ -51,6 +52,14 @@ const stories: StoryItem[] = [
     description:
       "Add remote tools such as Notion or Cloudflare and keep every action visible.",
     icon: Workflow,
+  },
+  {
+    screen: "slash-commands",
+    eyebrow: "Slash commands",
+    title: "Move quickly with commands.",
+    description:
+      "Switch models, choose skills, start chats, and open settings without leaving the composer.",
+    icon: Terminal,
   },
 ];
 
@@ -372,15 +381,15 @@ export function ScrollProductExperienceSection() {
             <div className="shrink-0 px-5 pb-5 pt-2">
               <div className="relative flex items-start justify-between">
                 {/* Connecting line */}
-                <div className="absolute left-[12.5%] right-[12.5%] top-[19px] h-[2px] bg-slate-200" />
+                <div className="absolute left-[10%] right-[10%] top-[19px] h-[2px] bg-slate-200" />
 
                 <motion.div
-                  className="absolute left-[12.5%] top-[19px] h-[2px] origin-left bg-blue-600"
+                  className="absolute left-[10%] top-[19px] h-[2px] origin-left bg-blue-600"
                   animate={{
                     scaleX: activeIndex / (stories.length - 1),
                   }}
                   style={{
-                    width: "75%",
+                    width: "80%",
                   }}
                   transition={{
                     duration: 0.35,
@@ -400,7 +409,7 @@ export function ScrollProductExperienceSection() {
                       onClick={() => updateActiveIndex(index)}
                       aria-label={`Open step ${index + 1}`}
                       aria-current={isActive ? "step" : undefined}
-                      className="relative z-10 flex w-1/4 flex-col items-center gap-2"
+                      className="relative z-10 flex w-1/5 flex-col items-center gap-2"
                     >
                       <motion.span
                         animate={{
@@ -466,7 +475,7 @@ export function ScrollProductExperienceSection() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="mt-12 grid max-w-sm grid-cols-4 gap-3">
+              <div className="mt-12 grid max-w-sm grid-cols-5 gap-3">
                 {stories.map((story, index) => (
                   <button
                     key={story.screen}

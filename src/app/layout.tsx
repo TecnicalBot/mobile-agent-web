@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mobile-agent.app";
+import { siteUrl } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +34,14 @@ export const metadata: Metadata = {
     "local AI agent",
     "Android automation",
     "AI agent with memory",
+    "offline AI model",
+    "on-device AI model",
+    "AI agent offline",
+    "scheduled AI agent",
+    "AI automation Android",
+    "AI agent schedules",
+    "custom AI agents",
+    "Termux AI agent",
     "personal ai assistant",
     "ai",
     "ai agent",
@@ -52,14 +59,23 @@ export const metadata: Metadata = {
     siteName: "Mobile Agent",
     title: "Mobile Agent - Open-Source AI Agent for Android",
     description:
-      "Run an open-source AI agent entirely on your Android phone with MCP, skills, memory, multi-modal support, and permission-based file access.",
+      "Run an open-source AI agent entirely on your Android phone with on-device models, MCP, skills, memory, schedules, and permission-based file access.",
+    images: [
+      {
+        url: "/agent.png",
+        width: 1024,
+        height: 1024,
+        alt: "Mobile Agent mascot holding a power plug",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Mobile Agent - Open-Source AI Agent for Android",
     description:
       "An open-source Android AI agent that runs entirely on your phone.",
     creator: "@tecnicalbot",
+    images: ["/agent.png"],
   },
   robots: {
     index: true,
