@@ -58,8 +58,8 @@ export default async function DocPage({
   if (!doc) notFound();
 
   return (
-    <div className="flex min-h-[calc(100svh-70px)]">
-      <article className="min-w-0 flex-1 border-r border-slate-200 bg-white px-5 pb-16 pt-12 sm:px-10 lg:px-12">
+    <div className="flex min-h-[calc(100svh-70px)] items-start">
+      <article className="min-w-0 flex-1 self-stretch border-r border-slate-200 bg-white px-6 pb-16 pt-12 sm:px-10 lg:px-12">
         <span className="inline-block rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600">
           {doc.group}
         </span>

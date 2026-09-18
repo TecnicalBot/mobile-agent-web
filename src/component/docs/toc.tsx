@@ -41,7 +41,7 @@ export function DocsToc({ headings }: { headings: TocItem[] }) {
   if (visible.length === 0) return null;
 
   return (
-    <aside className="sticky top-[110px] hidden max-h-[calc(100svh-130px)] w-56 shrink-0 overflow-y-auto xl:block">
+    <aside className="sticky top-[110px] hidden max-h-[calc(100svh-130px)] w-64 shrink-0 overflow-y-auto py-1 pl-8 pr-8 xl:block">
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
         On this page
       </p>

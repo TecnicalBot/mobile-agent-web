@@ -108,13 +108,68 @@ h4:hover .docs-anchor::before {
   overflow-x: auto;
   border-radius: 0.75rem;
   border: 1px solid rgb(226 232 240);
+  margin: 1.5rem 0;
+  background: #fff;
 }
 .prose .docs-table-wrap table {
-  margin: 0;
+  margin: 0 !important;
+  width: max-content;
+  min-width: 100%;
   border: none;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
-.prose .docs-table-wrap table th {
+.prose .docs-table-wrap thead {
+  border-bottom: none;
+}
+.prose .docs-table-wrap thead th {
   background: rgb(248 250 252);
+  color: rgb(15 23 42);
+  font-weight: 700;
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+.prose .docs-table-wrap tbody tr {
+  border-bottom: none;
+}
+.prose .docs-table-wrap tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: top;
+  color: rgb(51 65 85);
+  border-bottom: 1px solid rgb(241 245 249);
+}
+.prose .docs-table-wrap tbody tr:last-child td {
+  border-bottom: none;
+}
+/* Override typography's first/last-cell zero side padding so text
+   doesn't touch the bordered wrapper. */
+.prose .docs-table-wrap thead th:first-child,
+.prose .docs-table-wrap tbody td:first-child,
+.prose .docs-table-wrap tfoot td:first-child {
+  padding-left: 1rem;
+}
+.prose .docs-table-wrap thead th:last-child,
+.prose .docs-table-wrap tbody td:last-child,
+.prose .docs-table-wrap tfoot td:last-child {
+  padding-right: 1rem;
+}
+/* Keep header/row backgrounds clipped to the rounded wrapper. */
+.prose .docs-table-wrap thead th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.prose .docs-table-wrap thead th:last-child {
+  border-top-right-radius: 0.75rem;
+}
+.prose .docs-table-wrap tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 0.75rem;
+}
+.prose .docs-table-wrap tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 0.75rem;
 }
 
 /* Blockquote as info "callout" */
