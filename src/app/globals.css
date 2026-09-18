@@ -35,16 +35,16 @@ body {
   text-decoration: none;
   background-image: none;
 }
-.docs-anchor::before {
+.docs-anchor::after {
   content: "#";
-  margin-right: 0.5rem;
+  margin-left: 0.5rem;
   color: #0877ff;
   opacity: 0;
   transition: opacity 0.15s ease;
 }
-h2:hover .docs-anchor::before,
-h3:hover .docs-anchor::before,
-h4:hover .docs-anchor::before {
+h2:hover .docs-anchor::after,
+h3:hover .docs-anchor::after,
+h4:hover .docs-anchor::after {
   opacity: 1;
 }
 

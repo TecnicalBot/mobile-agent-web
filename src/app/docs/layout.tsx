@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DocsHeader } from "@/component/docs/docs-header";
-import { DocsSidebar } from "@/component/docs/sidebar";
+import { DocsMobileNav, DocsSidebar } from "@/component/docs/sidebar";
 
 export const metadata: Metadata = {
   title: "Documentation",
@@ -17,6 +17,7 @@ export default function DocsLayout({
   return (
     <div className="min-h-svh bg-[#f7f9fc] font-sans text-slate-950 antialiased selection:bg-blue-600 selection:text-white">
       <DocsHeader />
+      <DocsMobileNav />
       <div className="mx-auto flex max-w-[1440px]">
         <DocsSidebar />
         <main className="min-w-0 flex-1">{children}</main>

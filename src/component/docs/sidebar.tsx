@@ -1,17 +1,16 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDocGroups } from "@/lib/docs";
 
-export function DocsSidebar() {
+function DocsNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const groups = getDocGroups();
 
-  const nav = (
+  return (
     <nav className="docs-scroll flex-1 overflow-y-auto px-4 pb-8 pt-6">
       {groups.map((group) => (
         <div key={group.title} className="mb-7">
@@ -25,7 +24,7 @@ export function DocsSidebar() {
                 <li key={doc.slug}>
                   <Link
                     href={doc.url}
-                    onClick={() => setOpen(false)}
+                    onClick={onNavigate}
                     className={`block rounded-lg border-l-2 px-3 py-1.5 text-sm font-medium transition-colors ${
                       active
                         ? "border-blue-600 bg-blue-50 font-semibold text-blue-700"
@@ -42,32 +41,68 @@ export function DocsSidebar() {
       ))}
     </nav>
   );
+}
+
+export function DocsSidebar() {
+  return (
+    <aside className="sticky top-[70px] hidden h-[calc(100svh-70px)] w-72 shrink-0 border-r border-slate-200 bg-white/95 lg:flex lg:flex-col">
+      <DocsNavLinks />
+    </aside>
+  );
+}
+
+export function DocsMobileNav() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open ]);
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="sticky top-[70px] hidden h-[calc(100svh-70px)] w-72 shrink-0 border-r border-slate-200 bg-white/95 lg:flex lg:flex-col">
-        {nav}
-      </aside>
+      {/* Mobile secondary nav — Next.js docs style, top-left under header */}
+      <div className="sticky top-[70px] z-40 border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden">
+        <div className="mx-auto flex h-12 max-w-[1440px] items-center px-2 sm:px-4">
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            aria-controls="docs-mobile-nav"
+            aria-label={open ? "Close docs menu" : "Open docs menu"}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950"
+          >
+            <span>Menu</span>
+            <ChevronDown
+              size={16}
+              className={`text-slate-400 transition-transform duration-200 ${
+                open ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
-      {/* Mobile drawer trigger */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-blue-600 text-white shadow-lg lg:hidden"
-        aria-label="Open docs navigation"
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* Mobile drawer */}
+      {/* Mobile drawer from the left */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 right-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-2xl">
+          <div
+            id="docs-mobile-nav"
+            className="absolute inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-2xl"
+          >
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
               <span className="text-sm font-extrabold text-slate-950">
                 Documentation
@@ -81,7 +116,7 @@ export function DocsSidebar() {
                 <X size={18} />
               </button>
             </div>
-            {nav}
+            <DocsNavLinks onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
