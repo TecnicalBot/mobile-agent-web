@@ -414,6 +414,11 @@ export default function App() {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "WebSite",
+        name: "Mobile Agent",
+        url: siteUrl,
+      },
+      {
         "@type": "SoftwareApplication",
         name: "Mobile Agent",
         applicationCategory: "ProductivityApplication",

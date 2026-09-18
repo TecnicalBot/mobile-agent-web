@@ -44,6 +44,21 @@ function extractHeadings(raw: string): RawHeading[] {
   return headings;
 }
 
+/**
+ * Doc pages already render `title` as the page <h1> in
+ * `src/app/docs/[...slug]/page.tsx`, and every MDX body repeats it as a
+ * leading `# Title`. Drop that first h1 so each page has exactly one.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rehypeRemoveDuplicateH1: any = () => (tree: any) => {
+  if (!tree || !Array.isArray(tree.children)) return;
+  const index = tree.children.findIndex(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (node: any) => node?.type === "element" && node.tagName === "h1",
+  );
+  if (index !== -1) tree.children.splice(index, 1);
+};
+
 export const Doc = defineDocumentType(() => ({
   name: "Doc",
   filePathPattern: `docs/**/*.mdx`,
@@ -80,6 +95,7 @@ export default makeSource({
   mdx: {
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
+      rehypeRemoveDuplicateH1,
       rehypeSlug,
       [
         rehypeAutolinkHeadings,

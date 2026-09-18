@@ -5,6 +5,7 @@ import { MDXContent } from "@/component/docs/mdx-content";
 import { DocsToc } from "@/component/docs/toc";
 import { DocsPager } from "@/component/docs/pager";
 import { getDocBySlug, getDocGroups } from "@/lib/docs";
+import { siteUrl } from "@/lib/site-url";
 
 const siteRepoPath = (slug: string) =>
   `https://github.com/tecnicalbot/mobile-agent-web/blob/main/content/docs/${slug}.mdx`;
@@ -38,11 +39,20 @@ export async function generateMetadata({
       url: doc.url,
       type: "article",
       siteName: "Mobile Agent",
+      images: [
+        {
+          url: "/agent.png",
+          width: 1024,
+          height: 1024,
+          alt: "Mobile Agent mascot holding a power plug",
+        },
+      ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${doc.title} | Mobile Agent`,
       description: doc.description,
+      images: ["/agent.png"],
     },
   };
 }
@@ -57,8 +67,55 @@ export default async function DocPage({
 
   if (!doc) notFound();
 
+  const docUrl = `${siteUrl}${doc.url}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        headline: doc.title,
+        description: doc.description,
+        url: docUrl,
+        author: {
+          "@type": "Organization",
+          name: "TecnicalBot",
+          url: "https://github.com/TecnicalBot",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Mobile Agent",
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": docUrl,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: siteUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: doc.title,
+            item: docUrl,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="flex min-h-[calc(100svh-70px)] items-start">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <article className="min-w-0 flex-1 self-stretch border-r border-slate-200 bg-white px-6 pb-16 pt-12 sm:px-10 lg:px-12">
         <span className="inline-block rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600">
           {doc.group}
