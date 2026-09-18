@@ -1,0 +1,80 @@
+---
+title: Development
+description: Set up the Mobile Agent repository, run the app on Android, and run tests and linting.
+group: Contributing
+order: 0
+icon: code
+---
+
+# Development
+
+Mobile Agent is an **Expo (SDK 57) + React Native 0.86** app built with TypeScript, expo-router, NativeWind, and the Vercel AI SDK v7. This guide gets the repository running locally.
+
+## Prerequisites
+
+- Node.js (18+, matching Expo SDK 57 requirements)
+- **pnpm** (the repo is a pnpm workspace; `packageManager: pnpm@10`)
+- An Android device or emulator (Android SDK)
+
+## Clone and install
+
+```bash
+git clone https://github.com/TecnicalBot/mobile-agent.git
+cd mobile-agent
+pnpm install
+```
+
+The project uses `pnpm-workspace.yaml` with **patched dependencies** (`patches/`) for `@ai-sdk/mcp`, `expo-ai-kit`, and `react-native-css-interop`. A `postinstall` script (`node ./scripts/patch-ai-sdk-react-native.js`) wires the AI SDK patches for React Native.
+
+> **Expo note:** this project targets **Expo SDK 57**. Expo has changed significantly across versions — always reference the exact versioned docs at `https://docs.expo.dev/versions/v57.0.0/` before writing code.
+
+## Run on Android
+
+```bash
+pnpm android        # expo run:android  (builds + installs a dev build)
+pnpm start          # expo start
+pnpm dev            # (if you've created a dev-client config) dev build flow
+```
+
+The app reads native modules from the **`modules/`** directory (`expo.modules` autolinking via `autolinking.nativeModulesDir`). Native Android code lives in:
+
+- `modules/background-agent-service` — foreground service for scheduled runs
+- `modules/persistent-model-download` — background model downloads (WorkManager)
+- `modules/saf-file-operations` — Storage Access Framework file sessions
+- `modules/scheduler-alarm` — exact alarms
+- `modules/termux-stream` — the Termux TCP bridge
+- `modules/process-text` — share-into-app (ProcessText)
+
+If you change native code, rebuild the dev client (`expo run:android`) rather than reloading JS.
+
+## Web / tests / lint
+
+```bash
+pnpm web            # expo start --web
+pnpm test           # vitest run
+pnpm test:watch     # vitest (watch)
+pnpm lint           # expo lint
+```
+
+## Project layout (high level)
+
+```text
+src/
+├── app/                 # expo-router routes (chat, library, terminal, settings/*)
+├── core/                # db schema (drizzle), repositories, app-state types
+├── modules/             # feature modules (runtime, mcp, providers, skills, …)
+└── hooks/               # use-chat, use-config, app-state provider
+modules/                 # native Android modules
+catalog/                 # remote catalogs (mcp-servers.json, on-device-models.json, plugins/)
+oauth-proxy/             # Cloudflare Worker OAuth proxy
+scripts/                 # AI SDK React Native patch script
+```
+
+See [Architecture](/docs/contributing/architecture) for the deeper breakdown.
+
+## First contribution checklist
+
+1. Run the app against your model provider (or an on-device model).
+2. Write a failing test for the issue (repository/unit tests live alongside `core/` and feature modules).
+3. Run `pnpm test` and `pnpm lint` before opening the PR.
+4. If you touched a catalog, read [Catalogs](/docs/api-reference/catalogs) for schema and security requirements.

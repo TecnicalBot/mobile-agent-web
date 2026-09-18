@@ -1,0 +1,64 @@
+---
+title: Scheduler
+description: Run the agent on a schedule in the background with cron expressions, exact alarms, and notifications.
+group: Guides
+order: 6
+icon: clock
+---
+
+# Scheduler
+
+Mobile Agent can run tasks **on a schedule** — hourly digests, daily reports, nightly file cleanup, weekly summaries — while the app is closed. Jobs are driven by a background service with exact alarms and can write results back to the chat library.
+
+## Create a schedule
+
+1. Open **Settings → Jobs** (or the scheduler section) and tap **New schedule**.
+2. Enter a **title** and the **prompt** the agent should run (e.g. *"Summarize today's notes in the workspace and save to `daily.md`."*).
+3. Pick a **frequency**:
+   - `hourly`, `daily`, `weekly`, `monthly` — preset intervals.
+   - `custom` — any **cron expression** (via the `croner` engine), e.g. `0 9 * * 1-5` for weekdays at 9:00.
+4. Select the **model** (provider + model), and optionally an **agent** (see [Custom Agents](/docs/guides/custom-agents)).
+5. Toggle **autoApprove** — with it off, tool approval requests are raised; see [Tool Approvals](/docs/guides/tool-approvals).
+6. Optionally attach an **external folder** session (see [File Access](/docs/guides/file-access)) so the job can work in a folder you mounted.
+7. Save. The scheduler shows `nextRunAt` and `lastRunAt`, and you can enable/disable the job anytime.
+
+## How runs work
+
+- An in-app scheduler engine ticks every 30 seconds and fires due jobs.
+- Alarms use the native **exact alarm** API (`SchedulerAlarm`) so a job fires close to its scheduled time even when the app is backgrounded.
+- A **foreground service** (`BackgroundAgentService`) keeps runs alive, shows a persistent notification, and was designed to work with the **battery-optimization exemption** (the app asks you to allow it on first schedule).
+- Each run is recorded with a status: `queued → running → completed | failed | skipped`.
+- Files created during a run are saved and restored on wake, so a job that writes a report before the next alarm keeps its outputs.
+
+## Notifications
+
+You choose which events notify you in **Settings → Notifications**:
+
+- **Approval requests** — when a non-auto-approved tool needs your input.
+- **Run finished** — when a scheduled run completes or fails.
+
+Because jobs run in the background, notifications are the primary way you learn about results without keeping the app open.
+
+## Timezones and timing
+
+Every schedule stores its own **timezone**, so `cron` expressions are evaluated in the timezone you set, not the device's. If you travel, the job keeps its meaning.
+
+Jobs also have a **60-minute grace window** for missed or delayed firing — if a run is missed (e.g. device was off), the scheduler attempts it within the window rather than silently dropping it.
+
+## Example
+
+```text
+Title: Morning standup prep
+Prompt: Open the workspace, read yesterday's `notes.md`,
+        and write today's standup draft to `standup.md`.
+Frequency: daily at 08:30  (cron: 30 8 * * *)
+Model: OpenAI gpt-4.1-mini
+```
+
+The job runs every weekday morning, produces `standup.md`, and notifies you when done — no app interaction needed.
+
+## Requirements
+
+- **Battery optimization exempted** for the app (prompted automatically) — otherwise the OS may kill the background process.
+- **Notifications allowed** if you want run results.
+- A **model** that supports tool use if the prompt needs tools — on-device reasoning models work fully offline for scheduled tasks.

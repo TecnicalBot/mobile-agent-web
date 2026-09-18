@@ -1,0 +1,68 @@
+---
+title: Tool Approvals
+description: Understand Mobile Agent's permission-first model, per-tool settings, approval modes, and notifications.
+group: Guides
+order: 9
+icon: shield
+---
+
+# Tool Approvals
+
+Mobile Agent is **permission-first**. The agent can only act by calling tools, and every tool action is either explicitly approved by you or explicitly auto-approved for that conversation. There is no silent side-channel for the model to touch your files, network, or terminal.
+
+## The approval flow
+
+When an agent decides to call a tool, it produces a **tool execution request**:
+
+1. The run pauses with status `waiting_for_approval`.
+2. You see a card in the chat describing **what the tool does** and **the input** (e.g. "write file `src/index.ts` (3 KB)").
+3. Choose **Approve** or **Deny** — the run resumes either way.
+4. The outcome is recorded in the conversation timeline.
+
+Non-approval-driven requests — like asking you for missing information — use a sibling mechanism: the agent can ask a **questionnaire** (required/free-form/multiple-choice items) before it continues.
+
+> **Tip:** The agent also has a `question` tool for asking you plain questions mid-run, and a `requestSecret` tool for prompting you to enter an API key securely. See [Built-in Tools](/docs/api-reference/built-in-tools).
+
+## Approval modes
+
+Every conversation has a **ToolApprovalMode**:
+
+- **`ask`** (default) — every tool call waits for approval. Safest, and works for one-off chats with unknown needs.
+- **`auto`** — tool calls run without prompting. Choose this only for conversations that are heavily constrained (read-only tools, a trusted agent, a sandbox).
+
+Switch the mode per conversation from the composer. A scheduled job has its own `autoApprove` toggle so background runs don't stall waiting for input you're not there to give.
+
+## Per-tool control
+
+From **Settings → Tools** you control, for every **built-in tool** (27 keys such as `workspaceRead`, `workspaceWrite`, `folderDeleteEntry`, `downloadFile`, `todos`, `schedules`, `requestSecret`):
+
+- **Enabled / disabled** — a disabled tool is off the model's menu entirely.
+- Any per-tool tweaks surfaced by the app for that tool.
+
+**Custom agents** layer another dimension on top: each agent has its own tool permission matrix (which built-in tools and which MCP servers it may call). See [Custom Agents](/docs/guides/custom-agents).
+
+## Push notifications
+
+While the app is in the background, approval requests and run completion are surfaced as **push notifications** (configurable in **Settings → Notifications**):
+
+- `approvalRequests` — wakes you to approve/deny a paused tool call.
+- `runFinished` — tells you a (scheduled or manual) run finished or failed.
+
+Tapping an approval notification returns you straight to the pending card in the chat.
+
+## Requesting secrets
+
+Some workflows need an API key or token at runtime (for example a custom MCP server or a plugin). The agent can ask for it via `requestSecret`. Key points:
+
+- You enter the value in a secure prompt — it's stored in the app's **encrypted on-device secret store**.
+- The value is **never sent to the model**; hooks and tools reference it by key name only.
+- You can store, defer, or abort the request.
+
+See [Plugin API](/docs/api-reference/plugin-api) for how plugins use `api.secrets`.
+
+## Rules of thumb
+
+1. Keep `ask` on conversations with creative or destructive tools (terminal, folder deletes, downloads).
+2. Turn on `auto` only where the blast radius is small and the agent is trustworthy.
+3. Lock down agents with **per-agent permissions** before allowing `autoApprove` anywhere.
+4. Revisit **Settings → Tools** when you install plugins — a plugin's mutating tools join the same approval flow.

@@ -1,0 +1,143 @@
+---
+title: Plugin API
+description: Extend Mobile Agent with JavaScript plugins — custom tools, system prompts, lifecycle events, and secrets.
+group: API Reference
+order: 3
+icon: puzzle
+---
+
+# Plugin API
+
+Plugins extend Mobile Agent with custom **tools**, **system prompt** segments, and **lifecycle event handlers**. A plugin is a single self-contained JavaScript file imported from **Settings → Plugins**.
+
+> **Trust warning:** plugins execute as **trusted code** inside the app. Only install plugins you trust.
+
+## A minimal plugin
+
+```js
+// @mobile-agent-plugin {"name":"example-tools","version":"1.0.0","description":"Example prompt, tool, and lifecycle hooks."}
+
+module.exports = {
+  async setup(api, options) {
+    return {
+      system: [
+        typeof options.systemNote === "string"
+          ? options.systemNote
+          : "The example plugin is active.",
+      ],
+      tool: {
+        repeatText: {
+          description: "Repeat text a requested number of times.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              text: { type: "string" },
+              count: { type: "integer", minimum: 1, maximum: 10 },
+            },
+            required: ["text", "count"],
+            additionalProperties: false,
+          },
+          async execute(input) {
+            return Array(input.count).fill(input.text).join(" ");
+          },
+        },
+      },
+      event: {
+        "run:complete"(event) {
+          api.log("Run completed", event);
+        },
+      },
+    };
+  },
+};
+```
+
+## The manifest
+
+Every plugin starts with a one-line JSON comment header:
+
+```js
+// @mobile-agent-plugin {"name":"example-tools","version":"1.0.0","description":"…"}
+```
+
+The manifest records `name`, `version`, and `description`. Mobile Agent exposes `name`, `version`, `description`, `author`, `sourceUrl`, and `lastUpdateCheck` on the plugin config, and can check the source URL for updates.
+
+## `setup(api, options)`
+
+The module must export an object with an async `setup(api, options)` function. It receives:
+
+- **`api`** — host capabilities (below).
+- **`options`** — the user-configurable options object for this plugin (edited in Settings → Plugins → the plugin → Options).
+
+`setup` returns any combination of `system`, `tool`, `event`, and `dispose`.
+
+### `system`
+
+Prompt segments injected while the plugin is active:
+
+```js
+system: ["You have access to the example tool.", "Require approval for changes."]
+// or a function returning the segments
+system: (runContext) => [`Active run: ${runContext.id}`]
+```
+
+### `tool`
+
+AI SDK-style tools described with JSON Schema. Add `mutating: true` to route the tool through the app's **tool approval flow**:
+
+```js
+tool: {
+  updateSettings: {
+    description: "Update a config file.",
+    mutating: true,
+    inputSchema: { /* JSON Schema */ },
+    async execute(input) { /* … */ },
+  }
+}
+```
+
+### `event`
+
+Lifecycle hooks — receive the relevant run/message event payloads:
+
+| Event | Fired when |
+| --- | --- |
+| `run:start` | A run begins. |
+| `message:delta` | A model token delta arrives. |
+| `tool:after` | A tool finishes execution. |
+| `run:complete` | A run completes. |
+| `run:failed` | A run fails. |
+
+### `dispose`
+
+Cleanup invoked when plugins reload — cancel timers, close sockets, release resources.
+
+## The `api` surface
+
+Available inside `setup` (and passed to hooks/execute via scope):
+
+| API | Type | Purpose |
+| --- | --- | --- |
+| `api.fetch` | function | Fetch with React Native runtime polyfills applied. |
+| `api.storage` | namespaced | Stable key/value storage scoped to the plugin. |
+| `api.secrets.get(key)` | async | Read an encrypted secret by name (see below). |
+| `api.emit(name, payload)` | function | Emit app events. |
+| `api.log(...args)` | function | Log through the host's logger. |
+
+## Secrets
+
+API keys are entered by the user in **Settings → Plugins → \<plugin> → Secrets**, stored **encrypted on-device**, and **never sent to the model**:
+
+```js
+const token = await api.secrets.get("MY_API_KEY");
+```
+
+- Key names are discovered automatically — Settings shows a field for each.
+- The required secret names are reported to the agent, which directs the user to configure them.
+- **Never embed literal credentials in plugin code**, and never ask the user to paste a secret into the chat.
+
+## Bundling & constraints
+
+- Plugins must **bundle all dependencies into the single file** — runtime `import` and `require` are not available.
+- Load, manifest validation, and sandboxing happen through the plugin loader.
+- See the [example plugin](https://github.com/TecnicalBot/mobile-agent/blob/main/catalog/plugins/example.js) in the repository for a complete reference implementation.

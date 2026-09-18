@@ -26,7 +26,9 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 
 type GitHubAsset = {
@@ -364,6 +366,7 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const pendingScrollRef = useRef<string | null>(null);
+  const router = useRouter();
 
   const scrollToSection = (href: string) => {
     history.pushState(null, "", href);
@@ -382,12 +385,18 @@ export default function App() {
     href: string,
   ) => {
     event.preventDefault();
-    if (navOpen) {
-      pendingScrollRef.current = href;
-      setNavOpen(false);
-    } else {
-      scrollToSection(href);
+    if (href.startsWith("#")) {
+      if (navOpen) {
+        pendingScrollRef.current = href;
+        setNavOpen(false);
+      } else {
+        scrollToSection(href);
+      }
+      return;
     }
+    // Route navigation (e.g. the Docs section).
+    setNavOpen(false);
+    router.push(href);
   };
 
   const cardEntrances = [
@@ -437,6 +446,7 @@ export default function App() {
 
   const navigation = [
     ["Home", "#"],
+    ["Docs", "/docs"],
     ["About", "#about"],
     ["Capabilities", "#features"],
     ["FAQ", "#faq"],
@@ -1045,6 +1055,10 @@ export default function App() {
               </a>
             </span>
             . All Rights Reserved.{" | "}
+            <Link href="/docs" className="underline">
+              Docs
+            </Link>
+            {" | "}
             Design by{" "}
             <a href="https://github.com/7kajal" target="_blank" className="underline">
               Kajal Yadav (@7kajal)

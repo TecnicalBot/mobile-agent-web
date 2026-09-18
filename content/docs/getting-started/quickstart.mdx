@@ -1,0 +1,70 @@
+---
+title: Quick Start
+description: Launch Mobile Agent for the first time, choose a model, and run your first conversation with the agent.
+group: Getting Started
+order: 2
+icon: rocket
+---
+
+# Quick Start
+
+This guide walks you through your first minutes with Mobile Agent — from opening the app to letting the agent complete its first real task.
+
+## 1. Launch the app
+
+Open **Mobile Agent**. The home screen is the chat view. You'll see the agent's greeting and an empty conversation composer. The main tabs across the bottom let you switch between:
+
+- **Chat** — your conversations with the agent.
+- **Library** — saved files, prompts, and attachments.
+- **Terminal** — the live Termux command stream.
+- **Settings** — providers, MCP servers, skills, agents, schedules, plugins, and more.
+
+## 2. Add a model
+
+You need a model before you can chat. Open **Settings → Providers** and choose one of two paths:
+
+- **On-device model** — pick a model from the on-device catalog (for example **Qwen3 4B** or **Gemma 4 E2B**), tap download, and wait for the background download to complete. Once installed, this works with no internet connection. See [On-device Models](/docs/guides/on-device-models).
+- **Cloud provider** — choose **OpenAI**, **Anthropic**, **Google**, **xAI**, **OpenRouter**, **Ollama**, or a custom **OpenAI-compatible** provider, then either sign in with OAuth or paste an API key. See [Cloud Providers](/docs/guides/cloud-providers).
+
+Your selected model is shown in the composer's model picker, and you can switch per conversation.
+
+## 3. Start a conversation
+
+Tap the composer and type a message. For example:
+
+```text
+Summarize the tasks in my workspace and save the result to a file called summary.md.
+```
+
+The agent will stream its reply and, when it needs to act, show the **tools it wants to run** before doing anything destructive.
+
+> **Note:** If multiple MCP servers or skills are available, Mobile Agent may ask which ones to enable for this conversation — a small questionnaire at the top of the chat.
+
+## 4. Approve tool use
+
+Mobile Agent is permission-first. When the agent asks to create a file, connect to a server, or run a terminal command, you'll see an approval card in the chat:
+
+- **Ask** (default) — every tool run waits for your explicit approval.
+- **Auto** — trusted tools run without prompting (set per conversation).
+
+You can change the approval mode per conversation, and fine-tune it per tool, from **Settings → Tools**. See [Tool Approvals](/docs/guides/tool-approvals).
+
+## 5. Try the built-in agents
+
+Open the agent picker in the composer. Mobile Agent ships with three native agents:
+
+- **General** — balanced assistant for everyday questions and tasks.
+- **Plan** — works out a plan first, then carries it out step by step.
+- **Build** — focused on implementing, editing, and iterating on files.
+
+You can also create your own agents with custom system prompts and per-agent tool permissions — see [Custom Agents](/docs/guides/custom-agents).
+
+## 6. Remember it can remember
+
+Mobile Agent keeps a persistent memory store. When you tell it something like *"My project uses pnpm"* it can record that fact and recall it in later conversations. You can inspect and edit memory from **Settings → Memory**. See [Memory](/docs/guides/memory).
+
+## Next steps
+
+- Connect an **MCP server** to reach Notion, GitHub, Slack, or one of 50+ preset services — [MCP Servers](/docs/guides/mcp-servers).
+- Package an instruction you repeat often into a **skill** — [Skills](/docs/guides/skills).
+- Schedule the agent to run tasks while you're away — [Scheduler](/docs/guides/scheduler).

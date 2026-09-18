@@ -1,0 +1,71 @@
+---
+title: On-device Models
+description: Run language models entirely on your phone with LiteRT-LM, including offline use and background downloads.
+group: Guides
+order: 0
+icon: smartphone
+---
+
+# On-device Models
+
+On-device models let Mobile Agent run a language model **directly on your phone's hardware** with the **LiteRT-LM** engine. No internet connection, no remote servers, and no tokens or messages leaving your device.
+
+## How it works
+
+Models are packaged as `.litertlm` files and served from the **Mobile Agent on-device model catalog** (`on-device-models.json`), which the app fetches from the repository and caches in memory for 30 minutes, falling back to the bundled copy when offline. Downloads run through a native Android `WorkManager` worker, so a large model can download in the background while you keep using the app.
+
+Model files are cryptographically verified: every entry pins an exact `sha256` hash and `sizeBytes`, so a corrupted or tampered download fails safely instead of loading.
+
+## Requirements
+
+Each model lists a minimum RAM requirement (`minRamBytes`). Some are based on the model publisher's published minimum, others are derived from benchmarks or comparable models. Before enabling a model, Mobile Agent checks your device against this figure — a model that won't run well is not offered.
+
+Recommended guide (approximate):
+
+| RAM | Comfortable models |
+| --- | --- |
+| 6 GB | Qwen3 0.6B, LFM 2.5 1.2B, Qwen2.5 1.5B, Phi-4 Mini, DeepSeek R1 1.5B |
+| 8 GB | Qwen3 4B, SmolLM3 3B, Gemini 4 E2B, Qwen3 1.7B, DeepSeek R1 1.5B |
+| 12 GB | Gemma 4 E4B, Qwen3 8B, DeepSeek R1 7B |
+| 16 GB | Gemma 4 12B |
+
+Larger models also report a **low-memory context window** that the app falls back to when available memory is tight, so you keep functional tool use even under pressure.
+
+## Current catalog
+
+| Model | Params | Quantization | Context | Tools | Reasoning | Min RAM |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Gemma 4 E2B** | 2.3B | mixed 2/4/8-bit | 32K | Yes | No | 8 GB |
+| **Gemma 4 E4B** | 4.5B | mixed 4/8-bit | 32K | Yes | No | 12 GB |
+| **Gemma 4 12B** | 12B | mixed 4/8-bit | 32K | Yes | No | 16 GB |
+| **Qwen3 0.6B** | 0.6B | int4 | 2K | No | No | 6 GB |
+| **Qwen3 1.7B** | 1.7B | int8 | 4K | No | No | 8 GB |
+| **Qwen3 4B** | 4B | int4 | 2K | No | No | 8 GB |
+| **Qwen3 8B** | 8B | int4 | 2K | Yes | Yes | 12 GB |
+| **Qwen2.5 1.5B Instruct** | 1.5B | int8 | 4K | No | No | 6 GB |
+| **Phi-4 Mini** | 3.8B | int8 | 4K | No | No | 6 GB |
+| **DeepSeek R1 Distill 1.5B** | 1.5B | int8 | 4K | No | Yes | 6 GB |
+| **DeepSeek R1 Distill 7B** | 7B | int4 block-32 | 4K | No | Yes | 12 GB |
+| **SmolLM3 3B** | 3B | int4 block-32 | 4K | No | No | 8 GB |
+| **LFM 2.5 1.2B Thinking** | 1.2B | int4 | 4K | No | Yes | 6 GB |
+
+> **Note:** The catalog changes over time as models are added. Two engines are used: **CPU** for the smallest models (Qwen3 0.6B, LFM 2.5) and the GPU/LiteRT runtime for the rest. The `capabilities.tools` and `capabilities.reasoning` flags are shown in the UI so you know before you download whether a model can call tools or reason.
+
+## Install and use
+
+1. Open **Settings → Providers → On-device**.
+2. Tap a model card. Review its size, context window, minimum RAM, license, and capabilities.
+3. Download the model to your device. The worker runs in the background — you can leave the screen.
+4. When the download finishes, select the model in the composer's model picker.
+
+## Going fully offline
+
+Because the runtime, tool logic, and model all live on-device, you can:
+
+- Disable Wi-Fi and cellular data and keep chatting with an on-device model.
+- Let scheduled jobs run offline (though jobs that call cloud MCP servers will report connection failures).
+- Keep your conversations, memory, and workspace files private on the device.
+
+## Licensing
+
+Each model carries its own weight license — Gemma, Apache-2.0, MIT, or LFM Open. The license is shown on the model card before download. Check the individual model pages on Hugging Face for the exact terms that apply to your use case.

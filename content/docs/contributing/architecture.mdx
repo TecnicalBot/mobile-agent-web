@@ -1,0 +1,117 @@
+---
+title: Architecture
+description: A high-level tour of Mobile Agent's architecture — routing, modules, native code, data layer, and catalogs.
+group: Contributing
+order: 2
+icon: layout
+---
+
+# Architecture
+
+Mobile Agent is a mobile-first agent runtime. This reference maps the moving parts so you can find your way around the codebase and reason about how features fit together.
+
+## Overview
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│  expo-router (src/app)   Chat · Library · Terminal ·     │
+│  Settings tree (providers, mcp, skills, agents, jobs…)   │
+└───────────────┬──────────────────────────┬───────────────┘
+                │ hooks (use-chat, use-config)
+        app-state provider                 │
+                │    wires repositories, modelRuntime,      │
+                │    MCP OAuth, notifications, background…  │
+┌───────────────▼──────────────────────────▼───────────────┐
+│  core/         drizzle + expo-sqlite schema, typed repos │
+│  modules/      runtime · mcp · providers · skills ·      │
+│                agents · scheduler · memory · plugins…    │
+└───────────────┬──────────────────────────┬───────────────┘
+                │                          │ native modules
+        modelRuntime (Vercel AI SDK v7)    │
+                │                          ▼
+        on-device (LiteRT-LM)            background-agent-service
+        cloud (openai/anthropic/google…)  persistent-model-download
+        mcp clients (@ai-sdk/mcp)         saf-file-operations
+                                          scheduler-alarm
+                                          termux-stream
+                                          process-text
+```
+
+## Routing (`src/app`)
+
+expo-router drives the app:
+
+- `(root)/index.tsx` — the chat screen.
+- `library.tsx`, `terminal.tsx` — library and terminal tabs.
+- A broad `settings/` tree — providers, jobs, `mcp/connected|list`, `skills/[id]`, `agents`, `plugins/[id]`, memory, prompts, tools, built-in.
+- `mcp/oauth/callback` — the OAuth redirect handler.
+- `_layout.tsx` — root layout wiring fonts (Geist), the SQLite provider, and tool-approval notification handling.
+
+## Core (`src/core`)
+
+- **`db/schema.ts`** — Drizzle schema over **expo-sqlite**: conversations, messages, runs, agents, skills, plugins, schedules, MCP servers, providers, memory, workspace files.
+- **`repositories/`** — typed data access for every entity.
+- **`types/app-state.ts`** — the shared type model: `ProviderFamily`, `ModelTransport`, `AgentRunStatus`, `ToolApprovalMode`, `BuiltInToolKey`, `Schedule`, `SkillConfig`, `AgentConfig`, `PluginConfig`, `McpServerConfig`, and more.
+- **`services/`** — crypto, local server, external-folder and workspace-file services.
+
+## Feature modules (`src/modules`)
+
+| Module | Responsibility |
+| --- | --- |
+| `model-runtime`, `run-manager` | Message → model → tools orchestration; run status machine. |
+| `mcp` | MCP client management, OAuth, connected/list flows. |
+| `providers` | Provider accounts, model discovery, presets, reasoning effort. |
+| `on-device` | LiteRT-LM engine, model download manager. |
+| `scheduler` | cron engine, foreground service integration, run records. |
+| `skills` | Skill parsing, frontmatter, activation, alias→tool mapping. |
+| `agents` | Custom agent lifecycle, plan/build modes, subagents. |
+| `memory` | Declarative fact store + `memory.md`. |
+| `notifications` | Approval + run-finished push notifications. |
+| `plugins` | Plugin loader, sandbox, manifest, updater, secrets. |
+| `context` | Budget, pruning, truncation, summarization. |
+| `tools/built-in` | The 27 built-in tool implementations. |
+| `termux` | Termux stream client. |
+| `updates` | GitHub release checks. |
+| `config` | App settings and configuration. |
+
+## The AI SDK runtime
+
+Mobile Agent is built on the **Vercel AI SDK v7**:
+
+- `generateTextStream` drives streaming replies; tool calls use AI SDK tool definitions with JSON Schema.
+- Providers: `@ai-sdk/openai`, `@ai-sdk/anthropic`, `@ai-sdk/google`, `@ai-sdk/xai`, `@ai-sdk/openai-compatible`, plus `ollama-ai-provider-v2`.
+- MCP uses `@ai-sdk/mcp` (protocol `2025-11-25`) with React Native runtime polyfills for `crypto` and `AbortSignal.throwIfAborted`.
+- A **patch script** (`scripts/patch-ai-sdk-react-native.js`, run via `postinstall`) adapts the AI SDK for React Native constraints.
+
+## Native Android modules (`modules/`)
+
+Expo native modules bridging into Android:
+
+- `background-agent-service` — foreground service that keeps scheduled runs alive (with notifications + battery-optimization exemption flow).
+- `persistent-model-download` — WorkManager-based model downloads that survive app restarts.
+- `saf-file-operations` — SAF folder sessions (`content://`), create/relocate entries, path-traversal protection.
+- `scheduler-alarm` — exact alarms for scheduled jobs.
+- `termux-stream` — TCP host/port/token bridge to the Termux plugin, streaming `output`/`done`/`error`/`connectionChange` events.
+- `process-text` — Android ProcessText/share-into-app integration.
+
+## Data & persistence
+
+- **SQLite (expo-sqlite) via Drizzle** is the source of truth for app state at runtime.
+- **expo-secure-store** holds credentials — API keys, OAuth tokens, plugin secrets — never in the database or models.
+- A **storage abstraction** (repositories + `file-memory-store.ts`) enables local vs remote database modes for memory.
+
+## Remote catalogs & updates
+
+- `catalog/mcp-servers.json` and `catalog/on-device-models.json` are fetched from `main` and cached 30 minutes with a bundled fallback — see [Catalogs](/docs/api-reference/catalogs).
+- Self-updates query GitHub Releases (`api.github.com/…/releases`) with a 60-minute cache and prerelease awareness.
+- The `oauth-proxy/` directory is a **Cloudflare Worker** that implements the OAuth loopback for MCP servers that can't redirect back to the mobile app (PKCE).
+
+## Where to start reading
+
+```text
+src/core/types/app-state.ts          # the type model — start here
+src/modules/model-runtime/           # how runs work
+src/modules/tools/built-in/          # built-in tool implementations
+src/modules/plugins/                 # plugin loader + sandbox + example
+catalog/                             # remote catalog schemas
+```

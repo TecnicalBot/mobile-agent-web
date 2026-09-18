@@ -1,0 +1,75 @@
+---
+title: Adding a Model
+description: Choose between on-device and cloud models and connect a provider in Settings.
+group: Getting Started
+order: 3
+icon: cpu
+---
+
+# Adding a Model
+
+Mobile Agent supports two fundamentally different kinds of models:
+
+- **On-device models** that run directly on your phone's hardware and need no internet connection.
+- **Cloud models** that run on a provider's servers — you connect the provider once and pick its models.
+
+You can mix both freely. Each conversation picks its own model from **Settings → Providers** or the model picker in the composer.
+
+## On-device models
+
+On-device models are downloaded from the Mobile Agent model catalog and run with the **LiteRT-LM** engine. They are ideal for privacy-sensitive work, offline use, and fast turnarounds — but they are smaller, so choose the size that matches your device's RAM.
+
+The catalog currently includes Gemma 4 E2B/E4B/12B, Qwen3 0.6B–8B, Qwen2.5 1.5B, DeepSeek R1 Distill 1.5B/7B, SmolLM3 3B, LFM 2.5, and Phi-4 Mini. To install one:
+
+1. Open **Settings → Providers → On-device**.
+2. Tap a model to see its size, context window, minimum RAM, license, and tool support.
+3. Tap **Download**. The model downloads in the background — you can keep using the app.
+4. Once complete, select the model in the composer.
+
+See [On-device Models](/docs/guides/on-device-models) for the full list and requirements.
+
+## Cloud providers
+
+Cloud models run on the provider's servers and support the largest, most capable models. Mobile Agent connects to them on your behalf using your own keys or OAuth sign-in.
+
+Supported providers:
+
+| Provider | Auth | Notes |
+| --- | --- | --- |
+| **OpenAI** | OAuth or API key | GPT models, image generation, Responses API |
+| **Anthropic** | API key | Claude models with reasoning |
+| **Google** | OAuth | Gemini models |
+| **xAI** | API key | Grok models |
+| **OpenRouter** | API key | Many models through one gateway |
+| **Ollama** | none | Your local Ollama server, e.g. `http://localhost:11434` |
+| **OpenAI-compatible** | API key | Any `/v1/chat/completions` or Responses-compatible endpoint |
+
+To add a provider:
+
+1. Open **Settings → Providers**.
+2. Choose a provider from the list.
+3. Complete **OAuth sign-in**, paste an **API key**, or enter a custom **base URL**.
+4. Pick a default model preset (or let the app discover available models).
+
+> **Security:** API keys are stored in the app's encrypted on-device secret store and are only used to talk to the provider you configured. They are never uploaded to Mobile Agent servers and never sent to the model.
+
+### Reasoning effort
+
+Models with reasoning support expose a **reasoning effort** level from `none` through `minimal`, `low`, `medium`, `high`, and `xhigh`. Higher effort produces deeper reasoning for hard problems at the cost of latency and tokens; lower effort is best for quick, routine replies.
+
+### Custom endpoints
+
+For OpenAI-compatible providers, enter the full base URL (for example `https://your-gateway.example.com/v1`). Custom profiles support both the Chat Completions and Responses transports, letting you point Mobile Agent at local servers, gateways, or self-hosted stacks.
+
+## Choosing between on-device and cloud
+
+| | On-device | Cloud |
+| --- | --- | --- |
+| **Internet** | Not required | Required |
+| **Privacy** | Data never leaves the phone | Messages go to the provider |
+| **Model size** | Small to mid (0.6B–12B) | Up to frontier models |
+| **Speed** | Dependent on device | Dependent on network |
+| **Cost** | Free | Uses provider billing |
+| **Tool use** | Only tool-capable models | Most models |
+
+The `ResolvedModel` picks in the composer show which capabilities each model supports — **tools**, **image input**, **image generation**, and **reasoning** — so you can pick the right model for the task.

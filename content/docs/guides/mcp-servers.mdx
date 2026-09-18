@@ -1,0 +1,74 @@
+---
+title: MCP Servers
+description: Connect Mobile Agent to external tools and services using the Model Context Protocol, with OAuth and preset servers.
+group: Guides
+order: 2
+icon: plug
+---
+
+# MCP Servers
+
+The **Model Context Protocol (MCP)** is an open standard that lets an AI agent call tools hosted on an external server. Mobile Agent speaks MCP natively (protocol version `2025-11-25`), so you can connect Notion, GitHub, Slack, Stripe, or any MCP server and let the agent act through it — every action still gated by approvals.
+
+## How it works
+
+- A server exposes **tools** over HTTP or SSE.
+- Mobile Agent connects, discovers the server's tools, and makes them available to the model in the current conversation.
+- When the agent wants to use a tool, it appears in the approval flow just like a built-in tool (see [Tool Approvals](/docs/guides/tool-approvals)).
+- You pick which MCP servers are active **per conversation**, so a finance chat can talk to Stripe without the file server cluttering a coding session.
+
+## Preset catalog
+
+Mobile Agent ships with a curated catalog of 50+ servers in `mcp-servers.json` — the same list is fetched from the repository at runtime and refreshed when its 30-minute cache expires.
+
+Highlights from the catalog:
+
+- **Work / PM** — Notion, Linear, Atlassian (Jira + Confluence), Asana-style boards
+- **Dev & cloud** — GitHub, Sentry, Honeycomb, Cloudflare, Pulumi, Render, Neon, Supabase, ClickHouse Cloud, DigitalOcean Docs, Microsoft Learn
+- **Communication** — Slack, Gmail, Google Chat, Google Calendar
+- **Payments & commerce** — Stripe, PayPal, Resend, Zapier
+- **Search** — Exa, Firecrawl, Context7, Google Maps, conversion tools
+- **Models & docs** — Anthropic MCP, OpenAI MCP, Mistral, Hugging Face, Excalidraw, tldraw
+
+You can see the full current list in the [installation catalog](https://github.com/TecnicalBot/mobile-agent/blob/main/catalog/mcp-servers.json).
+
+## Add a server
+
+1. Open **Settings → MCP → Add server**.
+2. **From the catalog** — tap a preset (Notion, GitHub, …) and the URL/auth are pre-filled.
+3. **Custom** — enter a server URL and pick HTTP or SSE transport.
+4. Configure auth (see below) and tap **Test connection**.
+5. On success the server shows **connected** and its tool count.
+
+Then, in any conversation, open the MCP selector and enable the server for that chat.
+
+## Authentication
+
+MCP servers support three auth modes:
+
+- **`none`** — open endpoints such as documentation search (Cloudflare Docs, Microsoft Learn).
+- **Headers** — a static bearer token or API key, e.g. `Authorization: Bearer <your GitHub PAT>`.
+- **OAuth** — full PKCE OAuth flow. Mobile Agent starts the browser, exchanges `authorization_code`, and stores the refresh token securely. A Cloudflare Worker proxy (`oauth-proxy/`) handles the loopback for endpoints that can't redirect back to a mobile app.
+
+The preset catalog ships public OAuth overrides (client ID, authorization URL, token URL, scopes, allowed origin) so most OAuth servers connect with a single tap. Sensitive credentials are never stored in the catalog — they live in the app's encrypted on-device store.
+
+## Testing, editing, and status
+
+From **Settings → MCP** you can:
+
+- **Test** a server's connection and tool discovery.
+- **Edit** its URL, transport, auth, OAuth scopes, and headers.
+- Import/export, including copying a server definition.
+- See `lastStatus` (`untested` / `connected` / `failed`), `toolCount`, and `serverInfo` for each server.
+
+A failed connection stores `lastError` so you can diagnose TLS, auth, and reachability issues directly.
+
+## Security model
+
+- Every MCP tool call flows through the same approval system as built-in tools.
+- OAuth tokens are stored encrypted on-device (via Expo's auth-session flow with PKCE).
+- The app implements MCP **client-side** with `@ai-sdk/mcp`, applying runtime polyfills for `crypto` and `AbortSignal.throwIfAborted` on React Native, so the server sees a standards-compliant client.
+
+## Writing or hosting your own
+
+Any HTTP/SSE MCP server can be added as a custom server. If you maintain a service and want it in the catalog, see [Catalogs](/docs/api-reference/catalogs) for the schema and contribution flow.

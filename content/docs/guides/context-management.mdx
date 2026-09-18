@@ -1,0 +1,48 @@
+---
+title: Context Management
+description: How Mobile Agent manages long conversations with budgets, pruning, truncation, and summarization.
+group: Guides
+order: 10
+icon: gauge
+---
+
+# Context Management
+
+Long conversations exhaust a model's context window, which degrades quality and can cause memory errors. Mobile Agent manages this automatically with a layered **context management system** so your chats stay usable far past their natural length.
+
+## How context is tracked
+
+Every message stores usage metadata (`ModelUsageSnapshot`) on-device:
+
+- input / output / total tokens per message
+- estimated **cost** (input, output, total)
+- the model's **context window**
+- **remaining context** and **context usage percentage**
+
+The app computes a running **budget** from the active model's window, and decides what fits — exactly like a memory manager inside an OS.
+
+## The escalation ladder
+
+When a conversation approaches its budget, the system applies strategies in this order:
+
+1. **Tool-output pruning** — the largest contributor to bloat. Tool results (file reads, grep hits, server listings) are truncated aggressively while keeping the parts the model actually needed. This is safe and loses the least value.
+2. **Truncation** — older low-value messages are dropped from the prompt (they remain in the conversation history on disk, with a marker so the model knows context was compacted).
+3. **Summarization** — the model compresses the earlier part of the conversation into a concise summary that replaces the original messages. This preserves the arc of the conversation (decisions, requirements, outcomes) at a fraction of the tokens.
+
+Each stage is visible in the message timeline, so you always know when and why context was compacted.
+
+## What this means for you
+
+- You rarely need to "remember" to make your chats short — the agent keeps the useful thread alive.
+- Cost-related fields let you keep an eye on provider spending (`costTotal` per message and per snapshot).
+- For genuinely huge multi-file work, prefer spreading across **custom agents with docs** and letting each agent hold a tighter context, rather than one mega-conversation.
+
+## Tips to reduce pressure manually
+
+- Enable only the **MCP servers and skills** each conversation needs — each adds system context.
+- Point the agent at specific files instead of whole directories.
+- Use `workspaceGrep`/`folderGrep` to extract the relevant lines instead of `workspaceRead`-ing a 10k-line file.
+- Switch to a model with a larger context window for long-running sessions (a 32K on-device model or a big cloud model).
+- Archive conversations you're done with — the library keeps them without them lingering in the active set.
+
+See also [On-device Models](/docs/guides/on-device-models) and [Cloud Providers](/docs/guides/cloud-providers) for context-window differences between models.

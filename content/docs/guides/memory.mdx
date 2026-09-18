@@ -1,0 +1,58 @@
+---
+title: Memory
+description: Give Mobile Agent a persistent memory that survives across conversations and projects.
+group: Guides
+order: 4
+icon: brain
+---
+
+# Memory
+
+Mobile Agent keeps a **persistent memory** so useful context survives between conversations. When you tell it something like *"my project uses pnpm and targets API v2"*, it can record that as a fact and recall it later — without re-explaining everything each time.
+
+## The memory model
+
+Memory is modeled as **declarative facts**, not chat transcripts:
+
+- A fact is a short, self-contained statement (for example `The mobile-agent build uses EAS.`)
+- Facts are stored in a `memory.md` document.
+- The agent can add, update, and delete facts with the memory tools.
+- Every change is recorded as a memory event (created / updated / deleted) with a reason and previous content, so edits are auditable.
+
+This keeps memory compact and reliable — the agent stores *what is true*, not what happened.
+
+## How the agent uses memory
+
+The memory tools are exposed to the model alongside the file tools. The agent is guided to:
+
+- **Store** durable facts (preferences, project context, credentials-locations, conventions) when they surface in a conversation.
+- **Retrieve / search** memory before answering questions that might depend on past context.
+- **Update** facts when things change, rather than piling up duplicate entries.
+
+You can see exactly what memory is stored and edit it manually from **Settings → Memory**.
+
+## Storage modes
+
+Memory uses the app's storage abstraction:
+
+- **Local** — the default. `memory.md` lives in the app's on-device database (SQLite via Drizzle). Nothing leaves your phone.
+- **Remote** — optionally, memory can sync to a remote database endpoint configured in Settings, so the same facts are available across multiple devices.
+
+Switching modes is done in **Settings**; existing local entries carry over into the active store.
+
+## Privacy
+
+Memory is sensitive by nature. A few guarantees:
+
+- Local memory never leaves the device.
+- Memory content is only sent to the model currently active in a conversation that has memory enabled — never broadcast across providers.
+- If you delete a fact or disable memory, the entry (and its history) is removed from the active store.
+
+## Example
+
+1. Chat: *"Remember that I prefer TypeScript and pnpm."*
+2. The agent calls the memory tool and stores the fact.
+3. Week later, new conversation: *"Set up my project."*
+4. The agent consults memory, sees the TypeScript/pnpm preference, and scaffolds accordingly — without you repeating it.
+
+> **Note:** Memory complements — and is distinct from — the on-disk [file workspace](/docs/guides/file-access). Workspace files hold long-form content the agent works on; memory holds compact facts the agent should always remember.

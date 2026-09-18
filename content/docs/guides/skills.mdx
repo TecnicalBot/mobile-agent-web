@@ -1,0 +1,72 @@
+---
+title: Skills
+description: Package repeatable instructions into reusable markdown skills that activate when a task matches.
+group: Guides
+order: 3
+icon: layers
+---
+
+# Skills
+
+A **skill** is a plain markdown file that packages instructions for a repeatable workflow — the kind of thing you'd normally paste into a prompt every time. Skills are stored, shared, imported, and enabled individually, and they can activate **automatically** when a conversation matches their keywords.
+
+## What a skill contains
+
+Skills are regular markdown with a YAML frontmatter block. A minimal example:
+
+```md
+---
+title: Write a project README
+description: Generates a clear, structured README for any software project.
+matchKeywords: [readme, documentation, "project readme"]
+instructions: |
+  When creating a README, always include: an overview, a quick-start
+  section with runnable commands, a feature list, and a license section.
+autoMatch: true
+---
+
+Additional context or guidance can go here.
+```
+
+Key fields:
+
+- **`title`** — shown in the library and enabled-skill picker.
+- **`description`** — a short explanation of when to use the skill.
+- **`instructions`** — the actual prompt guidance injected when the skill is active.
+- **`matchKeywords`** — words that trigger **auto-match** when they appear in a message.
+- **`autoMatch`** — whether the skill may activate itself based on keywords.
+- **`files`** — optional attachments (reference documents, templates) stored with the skill and exposed to the model.
+- **`recommendedTools` / `recommendedMcpServers`** — built-in tools and MCP servers the skill suggests enabling.
+
+## How activation works
+
+- **Auto-match** — if a skill has `matchKeywords` and `autoMatch: true`, Mobile Agent activates it when a conversation's text matches a keyword. This is how "readme" or "mcp" can light up the right skill without any setup.
+- **Manual** — enable a skill per conversation from the skill picker, or globally from **Settings → Skills**.
+
+Skills can also recommend the **capabilities** (built-in tools and MCP servers) the workflow needs. The app maps tool aliases to built-in tools so a skill written in plain language ("file read", "grep") resolves to the right tool keys.
+
+## Managing skills
+
+From **Settings → Skills** (tap a skill for its detail page) you can:
+
+- **Create / edit** a skill's frontmatter and instructions.
+- **Enable / disable** it, or set whether it can auto-match.
+- **Import** a skill from a `.md` file, and **export** one to `.md` to share it.
+- **Copy** and **delete** skills.
+- Review the attached files and recommended MCP servers / tools.
+
+## Import and share
+
+Because a skill is just a markdown file, sharing is trivial:
+
+1. **Export** the skill as `.md` (or save your own markdown file).
+2. Send it to a friend or a second device.
+3. **Import** it in **Settings → Skills** — frontmatter and attachments are restored.
+
+> **Tip:** Skills are the right size for single-purpose, well-scoped procedures. If you find yourself duplicating broad system-prompt behavior, consider a [Custom Agent](/docs/guides/custom-agents) instead.
+
+## Example workflow
+
+1. Create a skill named **"Code review"** with `matchKeywords: [review, code review]` and instructions covering what to look for (security, edge cases, tests).
+2. Leave `autoMatch: true`.
+3. In any conversation, type "can you review my code" — the skill activates automatically and the agent follows your review checklist.

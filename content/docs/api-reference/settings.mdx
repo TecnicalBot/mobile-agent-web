@@ -1,0 +1,101 @@
+---
+title: Settings
+description: Reference for every settings section in Mobile Agent, from providers and jobs to plugins and prompts.
+group: API Reference
+order: 1
+icon: settings
+---
+
+# Settings
+
+The **Settings** tab is the control center for Mobile Agent. Everything below is configurable there (sections correspond roughly to the settings tree).
+
+## Providers
+
+Manage model providers:
+
+- Add/remove **cloud providers** — OpenAI, Anthropic, Google, xAI, OpenRouter, Ollama, and custom OpenAI-compatible profiles — with OAuth or API keys.
+- Manage **on-device models** — browse and download from the on-device catalog.
+- Set **model presets** (default model per provider) and reasoning effort.
+- See provider connection status, model discovery, and errors.
+
+## MCP
+
+Manage MCP servers:
+
+- **Connected** — servers you've added, with status, tool count, and server info.
+- **List** — browse the preset catalog and add servers.
+- Test connections, configure transport (HTTP/SSE), auth `none`/headers/OAuth, and OAuth scopes — see [MCP Servers](/docs/guides/mcp-servers).
+
+## Skills
+
+Manage skills:
+
+- Create, edit, enable/disable, import, export, copy, and delete skills.
+- Set `autoMatch` and `matchKeywords`.
+- Review attached files and recommended MCP servers/tools — see [Skills](/docs/guides/skills).
+
+## Agents
+
+Manage custom agents:
+
+- Create/edit agents with custom prompts, docs, model, temperature.
+- Set mode (`primary` / `subagent` / `all`), hidden/enabled flags.
+- Configure per-agent tool permissions (built-in tools + MCP servers) — see [Custom Agents](/docs/guides/custom-agents).
+
+## Plugins
+
+Manage JavaScript plugins:
+
+- Import a plugin file (see [Plugin API](/docs/api-reference/plugin-api)).
+- Toggle enabled, edit options, check update status.
+- Configure **secrets** per plugin (stored encrypted, never sent to the model).
+
+## Jobs
+
+Manage scheduled jobs:
+
+- Create schedules with frequency/cron, model, agent, autoApprove, timezone, folder sessions.
+- See next/last run times and run history — see [Scheduler](/docs/guides/scheduler).
+
+## Memory
+
+Manage persistent memory:
+
+- View and edit stored facts (`memory.md`).
+- Enable/disable memory, switch local/remote database mode.
+- Review memory event history (created / updated / deleted) — see [Memory](/docs/guides/memory).
+
+## Prompts
+
+Manage saved prompts:
+
+- Save reusable prompt templates.
+- Insert them into the composer.
+- Edit and delete saved prompts.
+
+## Tools
+
+Manage built-in tools:
+
+- Enable/disable each of the 27 built-in tool keys.
+- Review approval-dependent tools — see [Built-in Tools](/docs/api-reference/built-in-tools) and [Tool Approvals](/docs/guides/tool-approvals).
+
+## Notifications
+
+Choose which events notify you:
+
+- `approvalRequests` — tool approval requests while backgrounded.
+- `runFinished` — scheduled/manual run completion or failure.
+
+## General app settings
+
+- **Appearance / theme** — system, light, or dark.
+- **Database mode** — local or remote (for shared/remote memory and data).
+- **Scheduling enabled** — master toggle for the background scheduler.
+- **Tool approval mode** — default `ask`/`auto` behavior.
+- **Update checks** — version checks against GitHub Releases (cached 60 min, prerelease-aware).
+
+## Where data lives
+
+All settings, conversations, memory, schedules, skills, agents, plugin configs, and MCP server configs are persisted on-device in the app's SQLite database (Drizzle + expo-sqlite). Credentials and secrets use the encrypted secret store — see the [Architecture](/docs/contributing/architecture) reference for the data model.

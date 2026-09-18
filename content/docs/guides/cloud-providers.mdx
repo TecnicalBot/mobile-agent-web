@@ -1,0 +1,82 @@
+---
+title: Cloud Providers
+description: Connect Mobile Agent to OpenAI, Anthropic, Google, xAI, OpenRouter, Ollama, or any OpenAI-compatible endpoint.
+group: Guides
+order: 1
+icon: cloud
+---
+
+# Cloud Providers
+
+Cloud providers give Mobile Agent access to the largest and most capable models. You connect a provider once — with OAuth or an API key — and its models appear in the composer picker for any conversation.
+
+## Provider families
+
+| Family | Typical models | Auth |
+| --- | --- | --- |
+| **OpenAI** | GPT models, image generation | OAuth or API key |
+| **Anthropic** | Claude | API key |
+| **Google** | Gemini | OAuth |
+| **xAI** | Grok | API key |
+| **OpenRouter** | 100s of routed models | API key |
+| **Ollama** | Local models on your LAN | none |
+| **OpenAI-compatible** | Any `/v1` endpoint | API key |
+
+## Transports
+
+Each model uses a **transport** that decides how the app talks to the provider:
+
+- `openaiChat` — OpenAI Chat Completions (`/chat/completions`).
+- `openaiResponses` / `codexResponses` — OpenAI Responses API (including Codex-aware endpoints).
+- `anthropic` — Anthropic Messages API.
+- `google` — Google Generative Language API.
+- `openaiCompatible` — your own base URL.
+- `onDevice` — the LiteRT-LM local engine.
+
+## Connect a provider
+
+1. Open **Settings → Providers**.
+2. Tap the provider you want.
+3. **OAuth providers** (Google, OpenAI, etc.) start a secure sign-in flow and store the resulting account — no token handling on your side. **API-key providers** (Anthropic, xAI, OpenRouter) just need a key pasted into the field. **Ollama** needs only the server address.
+4. Mobile Agent discovers available models and lets you set a **default preset** plus per-conversation overrides.
+
+When you're done, the provider shows a **connected** status. A failed connection surfaces the error so you can fix it (bad key, network, or blocked endpoint).
+
+### Custom OpenAI-compatible profiles
+
+For any gateway, proxy, or self-hosted stack, use **OpenAI-compatible** and set the base URL. The app lets you choose the transport:
+
+```text
+https://your-gateway.example.com/v1
+```
+
+Both Chat Completions and Responses are supported. This is the standard way to reach vLLM, LM Studio, Together, Groq, local tunneled servers, or corporate endpoints.
+
+## Per-conversation model selection
+
+Models are selected **per conversation**, not globally:
+
+- Use the composer's model picker to switch the current conversation to another provider/model on the fly.
+- Compare models inline — context window, tool support, image input/generation, and reasoning capability are shown for each.
+- The `ModelPreset` configuration stores which models each provider exposes plus your default.
+
+This makes it easy to use a fast on-device model for quick chats and a frontier cloud model for hard problem-solving in the same session.
+
+## Multi-modal support
+
+When the active model supports it, the composer accepts **image attachments** (image input) and the agent can **generate images** — for example with an image-capable OpenAI model. The resolved model capabilities are checked automatically before offering these options; a model that can't see or draw won't pretend it can.
+
+## Reasoning effort
+
+Models with reasoning support expose a `ReasoningEffort` from `none → xhigh` (`none`, `minimal`, `low`, `medium`, `high`, `xhigh`). Select the level per conversation to trade depth against latency and cost. Structured thinking, especially for planning and debugging, benefits from `high`/`xhigh`.
+
+## Privacy model
+
+Mobile Agent itself never sees or proxies your traffic. Applies to cloud providers specifically:
+
+1. You type a message in the app.
+2. The app sends **that conversation's messages** and tool definitions directly to the provider you chose.
+3. The provider streams tokens back.
+4. Only usage summaries (token counts, cost) are stored on-device per message.
+
+Turn off all cloud providers and stick to on-device models for a 100% offline setup — see [On-device Models](/docs/guides/on-device-models).

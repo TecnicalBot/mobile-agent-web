@@ -1,0 +1,74 @@
+---
+title: Build APK
+description: Build the Mobile Agent APK yourself with EAS, or rely on the automated GitHub release pipeline.
+group: Contributing
+order: 1
+icon: package
+---
+
+# Build APK
+
+Mobile Agent ships as an Android APK. Two supported paths:
+
+1. **Automated** — the GitHub Actions workflow builds and publishes a release APK whenever a new version is pushed.
+2. **Manual** — you build the APK yourself with EAS for testing or distribution.
+
+## Automated release pipeline
+
+The repo's `.github/workflows/android.yml` builds an APK on every push to `main` where the **`version` in `package.json` has changed**. The workflow uses EAS to produce a debug-capable production APK and attaches it to a GitHub Release.
+
+- Package/bundle id: `com.tecnicalbot.mobileagent`
+- Latest APK: [github.com/TecnicalBot/mobile-agent/releases](https://github.com/TecnicalBot/mobile-agent/releases)
+
+To ship a release, bump `version` in `package.json`, merge, and the workflow handles the rest.
+
+## Manual build with EAS
+
+`eas.json` defines two build profiles, both producing **APKs** (`buildType: "apk"`) with remote app versioning:
+
+```jsonc
+{
+  "cli": { "appVersionSource": "remote" },
+  "build": {
+    "production": { "autoIncrement": true, "android": { "buildType": "apk" } },
+    "development": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": { "buildType": "apk", "gradleCommand": ":app:assembleDebug" }
+    }
+  }
+}
+```
+
+Build a production APK:
+
+```bash
+pnpm install
+eas build -p android --profile production
+```
+
+Or a debug APK for internal testing:
+
+```bash
+eas build -p android --profile development
+```
+
+You'll need an Expo account and an Android signing setup (or EAS default credentials). The resulting `.apk` can be installed side-by-side or over existing installs.
+
+> **Note:** the app relies on **native modules** in `modules/` plus patched dependencies — build from a clean `pnpm install` so the `postinstall` patch script runs.
+
+## Local dev build (no cloud build)
+
+For a local APK/debug build without EAS cloud:
+
+```bash
+pnpm android        # expo run:android — compiles and installs a dev build locally
+```
+
+This requires the Android SDK and a connected device/emulator, and compiles the native modules from `modules/`.
+
+## Versioning & updates
+
+- The app checks GitHub Releases for updates and shows a notification when a new version exists (cached 60 min, prerelease-aware).
+- Installed data, conversations, memory, and settings are preserved when installing a new APK **over** the previous one.
+- `app.json` holds the application config (name, icons, and app identifier).

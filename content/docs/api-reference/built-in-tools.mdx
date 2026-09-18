@@ -1,0 +1,78 @@
+---
+title: Built-in Tools
+description: Reference for every built-in tool Mobile Agent exposes to models, grouped by capability.
+group: API Reference
+order: 0
+icon: wrench
+---
+
+# Built-in Tools
+
+Mobile Agent exposes a set of **built-in tools** that any connected model can call. Which tools are available is controlled per conversation and per agent through the approval system (see [Tool Approvals](/docs/guides/tool-approvals)).
+
+Each tool has a stable key of the form `camelCaseName`. The full set:
+
+## Workspace
+
+Operate on the app's private workspace directory.
+
+| Tool key | Description |
+| --- | --- |
+| `workspaceListFiles` | List files and directories in the workspace. |
+| `workspaceRead` | Read a file's contents. |
+| `workspaceWrite` | Write content to a file (creates or overwrites). |
+| `workspaceCreateFile` | Create a new empty file. |
+| `workspaceGrep` | Search file contents with a regular expression. |
+| `workspaceGlob` | Find files matching a glob pattern. |
+| `workspaceEdit` | Apply a targeted edit to an existing file. |
+
+## External folders
+
+Operate on a mounted external folder session (Storage Access Framework).
+
+| Tool key | Description |
+| --- | --- |
+| `folderListDirectory` | List entries in a mounted external folder. |
+| `folderRead` | Read a file from an external folder. |
+| `folderWrite` | Write to a file in an external folder. |
+| `folderCreateFile` | Create a file in an external folder. |
+| `folderCreateDirectory` | Create a directory in an external folder. |
+| `folderRenameEntry` | Rename a file or directory. |
+| `folderMoveEntry` | Move a file or directory to a new location. |
+| `folderDeleteEntry` | Delete a file or directory. |
+| `folderGrep` | Search external-folder file contents. |
+| `folderGlob` | Find external-folder files by glob. |
+| `folderEdit` | Apply a targeted edit in an external folder. |
+
+## Files & downloads
+
+| Tool key | Description |
+| --- | --- |
+| `downloadFile` | Download a URL into the workspace. |
+
+## Conversation & orchestration
+
+| Tool key | Description |
+| --- | --- |
+| `todos` | Read and update the conversation's todo list (pending / in_progress / completed). |
+| `question` | Ask you a structured question mid-run (freeform, choices, or multi-select). |
+| `skill` | Activate or manage a skill during the conversation. |
+| `schedules` | Create, update, or list scheduled jobs. |
+| `requestSecret` | Prompt you to configure an API key or token securely for a plugin or server. |
+
+## Workflow notes
+
+- **Tool approval** — mutating tools (writes, deletes, downloads, terminal, schedules) pause the run in `waiting_for_approval` until approved. This gate cannot be disabled globally per tool beyond the per-conversation `ask`/`auto` mode.
+- **Custom agents** restrict which of these tools each agent may use — even if a tool is enabled globally, an agent with it disabled in its permissions cannot call it.
+- **Skills alias mapping** — some skills refer to tools by natural aliases; the app resolves common aliases (e.g. "file read", "grep") to the built-in keys above. This lets a skill written in plain language work without knowing exact keys.
+
+## Tool execution timeline
+
+Every tool call is recorded in the message timeline with:
+
+- `toolName` and `status` (`running` / `completed` / `failed`)
+- `inputSummary` and `outputSummary`
+- `error` (when failed)
+- optional `termux` capture (command, output, taskId) when the tool ran a terminal command
+
+Use the timeline to audit exactly what the agent did — the approval system controls the action, and the timeline records it.

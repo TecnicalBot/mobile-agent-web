@@ -1,0 +1,108 @@
+---
+title: Catalogs
+description: Reference for the remote MCP server and on-device model catalogs, their schemas, and how to contribute.
+group: API Reference
+order: 2
+icon: database
+---
+
+# Catalogs
+
+Mobile Agent maintains two **remote catalogs** in the repository, fetched at runtime and cached in memory for 30 minutes (with a bundled copy as offline fallback):
+
+- `catalog/mcp-servers.json` — preset MCP servers.
+- `catalog/on-device-models.json` — on-device LiteRT-LM models.
+
+When a catalog change is merged to `main`, users receive it when the cache expires or the app restarts — **no app rebuild is required**.
+
+> **Schema note:** the top-level `version` field is the **catalog schema version**, not a content revision. Keep it at `1` when adding entries. Incrementing it requires shipping parser support in the app first; older releases reject unknown versions.
+
+## `mcp-servers.json`
+
+```jsonc
+{
+  "version": 1,
+  "servers": [
+    {
+      "id": "notion",
+      "label": "Notion",
+      "description": "Search, read, and update pages in your Notion workspace.",
+      "url": "https://mcp.notion.com/mcp",
+      "transport": "http",
+      "authMode": "oauth",
+      "oauthMode": "proxy"
+    }
+  ]
+}
+```
+
+Field reference:
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | string | yes | Stable, unique catalog identifier. |
+| `label` | string | yes | Name shown in the app. |
+| `description` | string | yes | Short explanation shown below the name. |
+| `url` | string | yes | Public HTTPS MCP endpoint. |
+| `transport` | `"http" \| "sse"` | yes | MCP transport. |
+| `authMode` | `"none" \| "oauth" \| "headers"` | yes | Authentication mode. |
+| `headerTemplate` | string | no | Public placeholder shown in the headers field (e.g. `Authorization: Bearer <…>`). |
+| `oauthClientId`, `oauthAuthorizationUrl`, `oauthTokenUrl`, `oauthScopes`, `oauthAllowedAuthOrigin` | string | no | Optional public OAuth overrides. |
+
+> **Security:** never add API keys, access tokens, client secrets, or private headers to this file. User credentials remain in the app's encrypted on-device secret store.
+
+## `on-device-models.json`
+
+```jsonc
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "qwen3-4b",
+      "name": "Qwen3 4B",
+      "parameterCount": "4B",
+      "quantization": "mixed-int4",
+      "downloadUrl": "https://huggingface.co/litert-community/Qwen3-4B/resolve/main/qwen3_4b_mixed_int4.litertlm",
+      "sha256": "f0794bc77efeaaf4f7af815f04c483b19b8f2ae4a102cef1b7b760a25848a18e",
+      "sizeBytes": 2659057664,
+      "contextWindow": 2048,
+      "lowMemoryContextWindow": 2048,
+      "minRamBytes": 8000000000,
+      "minRamBasis": "benchmark-derived",
+      "supportedPlatforms": ["ios", "android"],
+      "license": "Apache-2.0",
+      "capabilities": { "tools": false, "reasoning": false }
+    }
+  ]
+}
+```
+
+Only **LiteRT-LM** compatible files (`.litertlm`) should be added. Field reference:
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | string | yes | Stable, unique lowercase identifier. **Do not reuse an old ID.** |
+| `name` | string | yes | Name shown in Settings. |
+| `parameterCount` | string | yes | Short display label (e.g. `4B`). |
+| `quantization` | string | yes | Quantization display label. |
+| `downloadUrl` | string | yes | Public HTTPS URL to the model file. |
+| `sha256` | string | yes | Exact 64-char hash for integrity verification. |
+| `sizeBytes` | number | yes | Exact file size, used by progress + validation. |
+| `contextWindow` | number | yes | Practical token limit for the packaged model. |
+| `lowMemoryContextWindow` | number | no | Context window used on low-memory devices. |
+| `minRamBytes` | number | yes | Minimum device RAM to enable the model. |
+| `minRamBasis` | string | no | `published-minimum`, `benchmark-derived`, or `analogous-model-derived`. |
+| `backend` | `"cpu" \| "gpu"` | no | Inference backend. |
+| `supportedPlatforms` | `("ios" \| "android")[]` | yes | Platforms that can run it. |
+| `license` | string | yes | Model-weight license shown to the user. |
+| `capabilities.tools` | boolean | yes | Whether the model can call tools. |
+| `capabilities.reasoning` | boolean | yes | Whether the model supports reasoning. |
+
+## Contribution checklist
+
+Before merging a catalog change:
+
+- Test the exact URL, size, hash, and device memory requirement.
+- Changing a URL without updating the pinned size/hash makes the download **fail safely** (which is correct, but test it).
+- Never include secrets.
+- Keep `version: 1`.

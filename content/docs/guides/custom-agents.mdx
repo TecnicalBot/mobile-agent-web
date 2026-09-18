@@ -1,0 +1,60 @@
+---
+title: Custom Agents
+description: Create your own agents with custom prompts, plan/build modes, subagents, and per-agent tool permissions.
+group: Guides
+order: 5
+icon: bot
+---
+
+# Custom Agents
+
+Mobile Agent ships with three native agents — **General**, **Plan**, and **Build** — but it's built for customization. You can create your own agents with a custom system prompt, choose whether they can act as subagents, and control exactly which tools and MCP servers each agent may call.
+
+## Native agents
+
+- **General** — the balanced default for everyday questions and tasks.
+- **Plan** — analyzes first, produces a plan, then executes it step by step. Great for multi-step work.
+- **Build** — mode-focused implementation agent for writing, editing, and iterating on files.
+
+Native agents can also be granted **subagent visibility**: a primary agent may delegate sub-tasks to a subagent when the subagent flag is enabled on it.
+
+## Create an agent
+
+1. Open **Settings → Agents → New agent**.
+2. Give it a **name**, **description**, and the **system prompt** that defines its behavior (tone, responsibilities, constraints).
+3. Optionally attach **docs** — reference files the agent carries as context.
+4. Configure its **model** (provider + model) and **temperature**.
+5. Set the **mode**:
+   - `primary` — selectable as the main agent for a conversation.
+   - `subagent` — only callable as a delegate from another agent.
+   - `all` — usable in both roles.
+6. Toggle **hidden** to keep it out of the picker, and **enabled** to allow use.
+7. Save. The agent now appears in the composer's agent picker when its mode permits.
+
+## Per-agent tool permissions
+
+Each agent has its own permission matrix (`toolPermissions`):
+
+- **Built-in tools** — enable/disable individual tools (workspace reads, folder writes, download, todos, schedules, question, …) per agent see the [Built-in Tools](/docs/api-reference/built-in-tools) reference.
+- **MCP servers** — control which connected MCP servers this agent may use.
+
+A sensitive workflow agent, for example, can be locked to read-only tools and a single trusted server, while a build agent gets full workspace write access.
+
+## Custom system prompts and docs
+
+The `prompt` field is injected into the model as the agent's system prompt. Beyond that, agents can carry **docs**: attached reference files that provide detailed context (style guides, API references, permission rules) without bloating the one-line prompt. Multiple agents can share docs, and each doc is versioned with created/updated timestamps.
+
+## Import and export
+
+Agents are stored as markdown:
+
+- **Export** produces a `.md` file with the agent's prompt, docs, and configuration in frontmatter.
+- **Import** restores it on another device or account.
+
+This makes agents easy to share, back up, and version in a repository alongside your skills.
+
+## Start a conversation per agent
+
+From the composer's agent picker (or an agent's detail screen), select the agent and start a chat. The conversation inherits the agent's model, system prompt, and tool permissions for the duration of the run.
+
+> **Tip:** Combine custom agents with the [Scheduler](/docs/guides/scheduler) — schedule a job against a custom agent so background runs also respect its permissions and prompt.

@@ -1,0 +1,56 @@
+---
+title: Introduction
+description: Learn what Mobile Agent is, how it works, and why it runs entirely on your Android phone.
+group: Getting Started
+order: 0
+icon: home
+---
+
+# Introduction
+
+**Mobile Agent** is an open-source AI agent built specifically for Android devices. The agent runtime, memory, skills, tools, and local workspace all live inside the app itself — there is no separate companion server, no cloud backend, and nothing that must run on your computer.
+
+## What it does
+
+Mobile Agent turns your phone into an autonomous assistant that can:
+
+- Chat with large language models, either **on-device** (fully offline) or from **cloud providers**
+- Connect to **MCP servers** to reach external tools like Notion, GitHub, Slack, Stripe, and dozens more
+- Read and write files in its own **workspace** and, with Android's Storage Access Framework, in external folders
+- Remember useful facts between conversations with **persistent memory**
+- Package repeatable instructions into reusable **skills**
+- Run entirely on your **schedule** — including in the background while the app is closed
+- Execute commands live in **Termux** and stream the output back into the conversation
+- Extend itself with **JavaScript plugins**
+
+## How it works
+
+Everything is local-first. Your conversations, schedules, memory, skills, agents, and the model catalog are stored on-device in a SQLite database managed by the app. When you choose an on-device model, inference happens right on your phone's hardware with no network connection at all.
+
+When you connect a cloud provider such as OpenAI or Anthropic, only the messages for that conversation are sent to the provider you chose. Nothing is ever sent through a Mobile Agent proxy — you own your keys and your data.
+
+## Key features
+
+- **On-device AI models** — LiteRT-LM models (Gemma, Qwen, Phi, DeepSeek, and more) that run entirely offline in a background download manager.
+- **Cloud model providers** — OpenAI, Anthropic, Google, xAI, OpenRouter, Ollama, and any OpenAI-compatible or Anthropic-compatible endpoint.
+- **MCP support** — the Model Context Protocol with a preset catalog of 50+ servers, plus custom servers over HTTP or SSE, including full OAuth.
+- **Permission-first tools** — every file, terminal, and device action is gated by Android permissions and per-tool approval settings.
+- **Reusable skills** — markdown-defined instructions that activate automatically when the task matches.
+- **Persistent memory** — a declarative fact store that survives across conversations.
+- **Custom agents** — plan/build agents, subagents, and per-agent tool permissions.
+- **Scheduler** — cron-based jobs that run in the background with exact alarms and notifications.
+- **Termux terminal** — live command streaming from the AI to the terminal and back.
+- **File workspace** — project-style file access with list, read, write, grep, glob, and edit tools.
+- **Multi-modal** — send images to capable models and ask the model to generate images when the provider supports it.
+- **Open source** — MIT licensed, with an actively maintained repository and release pipeline.
+
+## Design principles
+
+1. **Local first.** The default stack runs on your device. Cloud services are opt-in per conversation.
+2. **Permission-first.** The agent can only do what you explicitly allow, one approval at a time.
+3. **Understandable.** Every model, server, skill, and tool has a clear name, description, and status.
+4. **Packaged, not pasted.** Skills, agents, and plugins can be exported as plain markdown/JavaScript and imported elsewhere.
+
+## Installation
+
+To get started, download the latest APK from the GitHub Releases page and install it on your Android device. See [Installation](/docs/getting-started/installation) for details, or jump straight to the [Quick Start](/docs/getting-started/quickstart) guide.

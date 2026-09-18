@@ -1,0 +1,56 @@
+---
+title: Terminal
+description: Let the agent run real commands in Termux and stream live output back into the conversation.
+group: Guides
+order: 7
+icon: terminal
+---
+
+# Terminal
+
+Mobile Agent integrates with **Termux**, the Android terminal emulator, so the agent can run real shell commands and stream the output back into the chat in real time.
+
+## How it works
+
+- The app sends a command over a **local TCP connection** (host / port / token) to the Termux streaming plugin.
+- Termux executes it using its normal process environment, including any packages you've installed (`pkg install`, Python, Node, git, etc.).
+- Output is streamed back as events — you watch the agent work line by line instead of waiting for a single blob.
+
+## Setup
+
+1. Install **Termux** (from [F-Droid](https://f-droid.org/packages/com.termux/) or GitHub).
+2. Install the Mobile Agent streaming add-on that exposes the TCP bridge (`termux-stream`).
+3. In Mobile Agent, open **Settings → Terminal** and enter the **host**, **port**, and **token** shown by the bridge.
+4. Tap **Test** — a connection change event confirms the bridge.
+
+Once connected, terminal tools become available in the agent's toolset (subject to approval).
+
+## Events and UI
+
+The terminal stream emits typed events:
+
+- `output` — appended command output.
+- `done` — command finished (with exit status).
+- `error` — command failed.
+- `connectionChange` — bridge connected or disconnected.
+
+The **Terminal tab** renders a live, Ghostty-powered terminal view (`expo-libghostty` UI). Each executed command is also captured and displayed as a read-only command card inside the conversation (with its `command`, `output`, and `taskId`), so the chat history stays understandable after the fact.
+
+## What the agent can do through it
+
+Because it's a real shell, the agent can:
+
+- Install packages, run scripts, and build artifacts.
+- Run `git` commands against a repository in the workspace.
+- Interact with CLIs (the same ones you'd use by hand).
+- Long-running work is streamed, and the scheduler can run terminal-based tasks in the background.
+
+## Safety
+
+Terminal access is the most powerful capability in Mobile Agent, and it's treated that way:
+
+- The **tool approval** flow gates every command — approve or deny per command, or enable `autoApprove` only for conversations you trust.
+- Permissions are per-tool and per-agent ([Tool Approvals](/docs/guides/tool-approvals), [Custom Agents](/docs/guides/custom-agents)).
+- The connection requires a **token** you configure — random, unguessable, and stored on-device.
+
+> **Recommendation:** keep terminal tools on `ask` unless you explicitly trust the conversation's agent and prompt.

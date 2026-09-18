@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
@@ -23,4 +24,129 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ------------------------------------------------------------------ */
+/* Docs                                                              */
+/* ------------------------------------------------------------------ */
+
+.docs-anchor {
+  color: inherit;
+  text-decoration: none;
+  background-image: none;
+}
+.docs-anchor::before {
+  content: "#";
+  margin-right: 0.5rem;
+  color: #0877ff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+h2:hover .docs-anchor::before,
+h3:hover .docs-anchor::before,
+h4:hover .docs-anchor::before {
+  opacity: 1;
+}
+
+/* Code inside prose paragraphs / inline */
+.prose :not(pre) > code {
+  border-radius: 0.375rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(241 245 249);
+  color: #075985;
+  font-weight: 600;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.85em;
+}
+
+/* rehype-pretty-code figure/pre wrappers */
+.prose .docs-codeblock {
+  position: relative;
+  margin: 1.5rem 0;
+}
+.prose .docs-codeblock .docs-codeblock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  border: 1px solid rgb(30 41 59);
+  border-bottom: none;
+  background: rgb(2 6 23);
+  color: rgb(148 163 184);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+}
+.prose .docs-codeblock pre {
+  margin: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.prose .docs-codeblock pre[data-language] {
+  border: 1px solid rgb(30 41 59);
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* code block with no visible figure wrappers */
+.prose pre {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(30 41 59);
+  background: rgb(2 6 23) !important;
+  color: rgb(226 232 240);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* Table overflow */
+.prose .docs-table-wrap {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+}
+.prose .docs-table-wrap table {
+  margin: 0;
+  border: none;
+}
+.prose .docs-table-wrap table th {
+  background: rgb(248 250 252);
+}
+
+/* Blockquote as info "callout" */
+.prose blockquote {
+  border-left: 3px solid #0877ff;
+  background: rgb(231 245 255);
+  border-radius: 0.625rem;
+  color: rgb(12 74 110);
+  font-weight: 500;
+  padding: 0.875rem 1.125rem;
+  font-style: normal;
+}
+.prose blockquote p:first-of-type {
+  margin-top: 0;
+}
+.prose blockquote p:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Docs sidebar scrollbar */
+.docs-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.docs-scroll::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 9999px;
+}
+.docs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Next-steps link cards */
+.docs-nextsteps a {
+  text-decoration: none;
 }

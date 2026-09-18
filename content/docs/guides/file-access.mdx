@@ -1,0 +1,83 @@
+---
+title: File Access
+description: Give the agent a workspace and controlled access to external folders through Android's Storage Access Framework.
+group: Guides
+order: 8
+icon: folder
+---
+
+# File Access
+
+Mobile Agent works with files in two places: its own **workspace** (a private project-style area inside the app) and **external folders** you mount through Android's Storage Access Framework (SAF).
+
+## The workspace
+
+Every installation has a **workspace** — a sandboxed directory where the agent reads and writes project files. It behaves like a mini repository:
+
+- Store source code, notes, markdown, and artifacts.
+- Organize with subfolders and relative paths.
+- Attach files to a conversation as context.
+
+The workspace is exposed through the `workspace*` tool family. See [Built-in Tools](/docs/api-reference/built-in-tools) for the full tool list.
+
+```text
+workspace/
+├── notes/
+│   └── daily.md
+├── src/
+│   └── index.ts
+└── README.md
+```
+
+## External folders (SAF)
+
+For anything outside the workspace — Documents, Downloads, SD cards, or a cloud folder — Mobile Agent uses **Storage Access Framework** (`content://` URIs). Instead of a blanket permission, Android hands the app a **folder session**:
+
+1. Tap **Browse folders** in the file picker.
+2. Pick a folder (or drive) using Android's system document picker.
+3. The app receives a scoped `content://` session (`ExternalFolderSession`) it can use for `folder*` tools.
+4. The session is per-conversation — enable it when a chat needs access to that folder.
+
+This means **the app never gets raw path access**; it goes through SAF's mediated file provider. Access ends when the session is closed.
+
+### Protection
+
+- **Path-traversal protection** — tools validate `relativePath` so `../` can't escape the mounted folder.
+- **Scoped operations** — create, relocate, and manage entries within the session only.
+- The session records its `uri`, `displayName`, `platform`, and `sourceType` for auditability.
+
+## Sharing content into the app
+
+Use Android's **share sheet** (sharing a file, text, or link "to Mobile Agent") — Mobile Agent registers a **ProcessText/account store** so shared content is handed directly to the current conversation as context. No copy-paste gymnastics.
+
+## File tools
+
+Two parallel tool families cover the common operations:
+
+| Action | Workspace | External folder |
+| --- | --- | --- |
+| List directory | `workspaceListFiles` | `folderListDirectory` |
+| Read file | `workspaceRead` | `folderRead` |
+| Write file | `workspaceWrite` | `folderWrite` |
+| Create file | `workspaceCreateFile` | `folderCreateFile` |
+| Create directory | — | `folderCreateDirectory` |
+| Rename / move | — | `folderRenameEntry`, `folderMoveEntry` |
+| Delete | — | `folderDeleteEntry` |
+| Grep | `workspaceGrep` | `folderGrep` |
+| Glob | `workspaceGlob` | `folderGlob` |
+| Edit | `workspaceEdit` | `folderEdit` |
+
+Plus **`downloadFile`** to fetch a URL into the workspace.
+
+## Permissions model
+
+- **Workspace reads** need no Android permission (app-private storage).
+- **External folders** need only the explicit SAF grant from the system picker — no "all files access".
+- Legacy **"All files access"** permission is requested only if you opt into an unscoped dump, and the app explains why first.
+- Every file action on either side is subject to the **tool approval** flow: see [Tool Approvals](/docs/guides/tool-approvals).
+
+## Tips
+
+- Keep shared project files in the workspace so scheduled jobs and build agents can reach them reliably.
+- For one-off tasks (convert that PDF in Downloads), mount an external folder session and close it when done.
+- The **Library tab** shows workspace files, prompts, and attachments in one place.

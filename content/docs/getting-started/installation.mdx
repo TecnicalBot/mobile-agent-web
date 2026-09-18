@@ -1,0 +1,48 @@
+---
+title: Installation
+description: Download the Mobile Agent APK, install it on your Android device, and grant the permissions it asks for.
+group: Getting Started
+order: 1
+icon: download
+---
+
+# Installation
+
+Mobile Agent is distributed as a self-contained Android APK through GitHub Releases. There is no Play Store listing and no server-side installer — it's a single file you download and install directly.
+
+## Download the APK
+
+1. Open the [Releases page](https://github.com/TecnicalBot/mobile-agent/releases) on GitHub.
+2. Find the latest release and download the `.apk` asset.
+3. (Optional) Verify the release notes to see what changed between versions.
+
+> **Tip:** The "Download APK" button on the [Mobile Agent website](/) resolves the same latest release automatically.
+
+## Install on Android
+
+1. Open the downloaded `.apk` file. Your device may warn that the app comes from an unknown source.
+2. Allow **"Install unknown apps"** for the file manager or browser you are using, then confirm the install.
+3. Once installed, launch **Mobile Agent**.
+
+If your device blocks the install, enable the toggle for your browser under **Settings → Apps → Special app access → Install unknown apps**.
+
+## Permissions
+
+On first launch the app will request Android permissions. What it needs depends on the features you use:
+
+- **Notifications** — required for tool-approval requests and scheduled run results.
+- **Battery optimization exemption** — recommended when you use the scheduler, so background runs aren't killed.
+- **Access to manage all files** (all files access) — used only when you mount an **external folder** session for file tools outside the workspace.
+- **Termux** — installed separately from F-Droid if you want the terminal feature.
+
+Every permission is used for a specific, documented feature. The agent's file and device actions are additionally gated by per-tool approval settings — see [Tool Approvals](/docs/guides/tool-approvals).
+
+## Updating
+
+Mobile Agent checks GitHub Releases for new versions and notifies you when one is available (the check results are cached for 60 minutes and respect prerelease settings). Download the new APK and repeat the install steps — your data, conversations, and settings are stored locally and are preserved across updates installed over the app.
+
+If you receive a warning that the app is **from an unknown developer**, that is expected for sideloaded APKs; ensure you downloaded the file from the official [TecnicalBot/mobile-agent](https://github.com/TecnicalBot/mobile-agent) repository.
+
+## Buildable from source
+
+The app is 100% open source (MIT). If you prefer, you can build the APK yourself with EAS or run it directly on an emulator — see [Build APK](/docs/contributing/build-apk) and [Development](/docs/contributing/development).
